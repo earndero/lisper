@@ -1,5 +1,3 @@
-/*
-* */
 public class CharScanner {
     String s;
     int position = 0;
@@ -9,8 +7,13 @@ public class CharScanner {
         this.s = s;
     }
 
-    void nextChar() {
-        position++;
+    boolean nextChar() {
+        if (position<s.length()) {
+            position++;
+            if (isLineBreak(peek())) return false;
+            return true;
+        }
+        else return false;
     }
 
     static boolean is_space(char ch) {
@@ -21,6 +24,10 @@ public class CharScanner {
         while (position<s.length() && is_space(s.charAt(position))) { position++; }
     }
 
+    private void skipEols() {
+        while (position<s.length() && isLineBreak(s.charAt(position))) { position++; }
+    }
+
     public char peek() {
         if (eof())
             return 0;
@@ -28,21 +35,31 @@ public class CharScanner {
             return s.charAt(position);
     }
 
-    public char peek(int la) {
-        return s.charAt(position+1);
-    }
-
     public void skip_comments() {
-        while (position<s.length() && s.charAt(position)!='\n')
+        while (position<s.length() && !isLineBreak(s.charAt(position)))
             position++;
-        if (s.charAt(position)=='\n')position++;
     }
 
     boolean eof() {
         return position>=s.length();
     }
 
+    boolean eof(int la) {//todo to remove
+        return position+la>=s.length();
+    }
+
+    public char peek(int la) {
+        if (eof(la))
+            return 0;
+        else
+            return s.charAt(position+la);
+    }
+
     int anchor = 0;
+
+    boolean isLineBreak(char c) {
+        return c==10 ||c==13;
+    }
 
     void setAnchor() {
         this.anchor = position;
@@ -51,4 +68,16 @@ public class CharScanner {
     String getAnchor() {
         return s.substring(anchor, position);
     }
+
+    public void skip_nocode() {
+        while (true) {
+            skip_whitespace();
+            if (eof()) return;
+            if (peek() == ';') skip_comments();
+            else if (isLineBreak(peek())) skipEols();
+            else break;
+        }
+    }
+
+
 }

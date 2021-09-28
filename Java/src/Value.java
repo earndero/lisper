@@ -880,24 +880,32 @@ public class Value {
 
 // Parse an entire program and get its list of expressions.
     static List<Value> parse(String s) { //todo move to other place?
-        //int[] i = {0};
-        CharScanner lexer = new CharScanner(s);
-        //int  last_i=-1;
+        s = "  sasd \"123\"6 >12;34.5 \"gh\nhh' +-";
+        CharScanner scanner = new CharScanner(s);
+        Lexer lexer = new Lexer(scanner);
+        while (lexer.next()) {
+            Token token = lexer.peek();
+            System.out.printf("%s %s\n", token.type.toString(), token.value);
+        }
+
+        System.exit(0);
+        return null;
+/*
         List<Value> result = new ArrayList<>();
         // While the parser is making progress (while the pointer is moving right)
         // and the pointer hasn't reached the end of the string,
-        while (lexer.peek()!=0) {
+        while (scanner.peek()!=0) {
             // Parse another expression and add it to the list.
             //last_i = i[0];
-            result.add(parse(lexer));
+            result.add(parse(scanner));
         }
 
         // If the whole string wasn't parsed, the program must be bad.
-        if (!lexer.eof())
+        if (!scanner.eof())
             throw new Error(null, new Environment(), Error.MALFORMED_PROGRAM);
 
         // Return the list of values parsed.
-        return result;
+        return result;*/
     }
 
     // Execute code in an environment
