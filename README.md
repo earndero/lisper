@@ -1,4 +1,4 @@
 # lisper
 Parsing and evaluation of List expressions
 
-Translation od wisp repository from .cpp to .java.
+Translation of wisp repository from .cpp to .java. Open with IDE directory Java.
