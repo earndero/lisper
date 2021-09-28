@@ -487,6 +487,36 @@ public class builtin {
         }
     };
 
+    // Is then number even ?
+    static Builtin evenp = new Builtin() {
+        @Override
+        public Value apply(Param p) {
+            // Is not a special form, so we can evaluate our p.args.
+            if (p.args.size() != 1)
+                throw new Error(new Value("<=", less_eq), p.env, p.args.size() > 2 ? Error.TOO_MANY_ARGS : Error.TOO_FEW_ARGS);
+
+            eval_args(p.args, p.env);
+
+            int n = p.args.get(0).even()?1:0;
+            return new Value(n);
+        }
+    };
+
+    // Is then number odd ?
+    static Builtin oddp = new Builtin() {
+        @Override
+        public Value apply(Param p) {
+            // Is not a special form, so we can evaluate our p.args.
+            if (p.args.size() != 1)
+                throw new Error(new Value("<=", less_eq), p.env, p.args.size() > 2 ? Error.TOO_MANY_ARGS : Error.TOO_FEW_ARGS);
+
+            eval_args(p.args, p.env);
+
+            int n = p.args.get(0).odd()?1:0;
+            return new Value(n);
+        }
+    };
+
     // Get the type name of a value
     static Builtin get_type_name = new Builtin() {
         @Override

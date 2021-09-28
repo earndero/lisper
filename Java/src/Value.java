@@ -379,6 +379,19 @@ public class Value {
         }
     }
 
+    public boolean even() {
+        if (type != Type.INT)
+            throw new Error(this, new Environment(), Error.INVALID_UNARY_OP);
+        return (int)(stack_data) % 2 == 0;
+    }
+
+    public boolean odd() {
+        if (type != Type.INT)
+            throw new Error(this, new Environment(), Error.INVALID_UNARY_OP);
+        return (int)(stack_data) % 2 == 1;
+    }
+
+
     ////////////////////////////////////////////////////////////////////////////////
     /// ARITHMETIC OPERATIONS //////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////

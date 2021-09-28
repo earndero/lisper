@@ -56,6 +56,10 @@ public class Environment {
         if (name.equals(">=")) return new Value(">=", builtin.greater_eq);
         if (name.equals("<=")) return new Value("<=", builtin.less_eq);
 
+        // Functions returns boolean
+        if (name.equals("evenp")) return new Value("evenp", builtin.evenp);
+        if (name.equals("oddp")) return new Value("oddp", builtin.oddp);
+
         // Arithmetic operations
         if (name.equals("+")) return new Value("+", builtin.sum);
         if (name.equals("-")) return new Value("-", builtin.subtract);
@@ -107,6 +111,7 @@ public class Environment {
 
         // Constants
         if (name.equals("endl")) return Value.string("\n");
+
 
         Value value = defs.get(name);
         if (value!=null) return value;

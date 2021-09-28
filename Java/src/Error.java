@@ -8,6 +8,7 @@ public class Error extends java.lang.Error {
     static final String UNKNOWN_ERROR = "unknown exception";
     static final String INVALID_LAMBDA = "invalid lambda";
     static final String INVALID_BIN_OP = "invalid binary operation";
+    static final String INVALID_UNARY_OP = "invalid unary operation";
     static final String INVALID_ORDER = "cannot order expression";
     static final String BAD_CAST = "cannot cast";
     static final String ATOM_NOT_DEFINED = "atom not defined";
