@@ -762,20 +762,12 @@ public class Value {
         }
     }
 
-    static void skip_whitespace(String s, int[] ptr) {
-        if (ptr[0]>=s.length())
-            return;
-        while (is_space(s.charAt(ptr[0]))) { ptr[0]++; }
-    }
 
     static boolean is_punct(char ch) {
         return (ch>=33 && ch<=47)||(ch>=58 && ch<=64)||(ch>=91 && ch<=96)
                 ||(ch>=123 && ch<=126);
     }
 
-    static boolean is_space(char ch) {
-        return Character.isSpaceChar(ch) || ch==10 || ch==13;
-    }
 
     // Is this character a valid lisp symbol character
     static boolean is_symbol(char ch) {
@@ -785,72 +777,65 @@ public class Value {
 
     // Parse a single value and increment the pointer
 // to the beginning of the next value to parse.
-    static Value parse(String s, int[] ptr) {
-        skip_whitespace(s, ptr);
+    static Value parse(CharScanner lexer) {
+        lexer.skip_whitespace();
 
-        while (s.charAt(ptr[0]) == ';') {
+        while (lexer.peek() == ';') {
             // If this is a comment
-            int work_ptr = ptr[0];
-            while (work_ptr < s.length() && s.charAt(work_ptr) != '\n') { work_ptr++; }
-            ptr[0] = work_ptr;
-            //s = s.substring(0,ptr[0])+s.substring(save_ptr); //todo : need speedup for long, multiline strings
-            skip_whitespace(s, ptr);
-
-            if (ptr[0]>=s.length())
+            lexer.skip_comments();
+            lexer.skip_whitespace();
+            if (lexer.eof())
                 return new Value();
         }
 
-        if (s.equals("")) {
+        if (lexer.eof()) {
             return new Value();
-        } else if (s.charAt(ptr[0]) == '\'') {
+        } else if (lexer.peek() == '\'') {
             // If this is a quote
-            ptr[0]++;
-            return quote(parse(s, ptr));
+            lexer.nextChar();
+            return quote(parse(lexer));
 
-        } else if (s.charAt(ptr[0]) == '(') {
+        } else if (lexer.peek() == '(') {
             // If this is a list
-            ptr[0]++;
-            skip_whitespace(s, ptr);
+            lexer.nextChar();
+            lexer.skip_whitespace();
 
             Value result = new Value(new ArrayList<>());
 
-            while (s.charAt(ptr[0]) != ')')
-                result.push(parse(s, ptr));
+            while (lexer.peek() != ')')
+                result.push(parse(lexer));
 
-            ptr[0]++;
-            skip_whitespace(s, ptr);
+            lexer.nextChar();
+            lexer.skip_whitespace();
             return result;
 
-        } else if (Character.isDigit(s.charAt(ptr[0])) ||
-                (s.charAt(ptr[0]) == '-' && Character.isDigit(s.charAt(ptr[0]+1)))) {
+        } else if (Character.isDigit(lexer.peek()) ||
+                (lexer.peek() == '-' && Character.isDigit(lexer.peek(1)))) {
             // If this is a number
-            boolean negate = s.charAt(ptr[0]) == '-';
-            if (negate) ptr[0]++;
+            boolean negate = lexer.peek() == '-';
+            if (negate) lexer.nextChar();
 
-            int save_ptr = ptr[0];
-            while (ptr[0]<s.length() && (Character.isDigit(s.charAt(ptr[0])) || s.charAt(ptr[0]) == '.'))
-                ptr[0]++;
-            String n = s.substring(save_ptr, ptr[0]);//todo if C++ substr is Java substr?
-            skip_whitespace(s, ptr);
+            lexer.setAnchor();
+            while (!lexer.eof() && (Character.isDigit(lexer.peek()) || lexer.peek() == '.'))
+                lexer.nextChar();
+            String n = lexer.getAnchor();
+            lexer.skip_whitespace();
 
             if (n.indexOf('.') >=0)
             return new Value((negate? -1 : 1) * Double.parseDouble(n));
         else return new Value((negate? -1 : 1) * Integer.parseInt(n));
 
-        } else if (s.charAt(ptr[0]) == '\"') {
+        } else if (lexer.peek() == '\"') {
             // If this is a string
-            int n = 1;
-            while (s.charAt(ptr[0] + n) != '\"') {
-                if (ptr[0] + n >= s.length())
-                throw new Error(null, new Environment(), Error.MALFORMED_PROGRAM);
-
-                if (s.charAt(ptr[0] + n) == '\\') n++;
-                n++;
+            lexer.nextChar();
+            lexer.setAnchor();
+            while (lexer.peek() != '\"') {
+                lexer.nextChar();
             }
 
-            String x = s.substring(ptr[0]+1, ptr[0]+n);
-            ptr[0] += n+1;
-            skip_whitespace(s, ptr);
+            String x = lexer.getAnchor();
+            lexer.nextChar();
+            lexer.skip_whitespace();
 
             // Iterate over the characters in the string, and
             // replace escaped characters with their intended values.
@@ -873,21 +858,20 @@ public class Value {
             }
             x = sbx.toString();
             return string(x);
-        } else if (s.charAt(ptr[0]) == '@') {
-            ptr[0]++;
-            skip_whitespace(s, ptr);
+        } else if (lexer.peek() == '@') {
+            lexer.nextChar();
+            lexer.skip_whitespace();
             return new Value();
 
-        } else if (is_symbol(s.charAt(ptr[0]))) {
+        } else if (is_symbol( lexer.peek() )) {
             // If this is a string
-            int n = 0;
-            while (is_symbol(s.charAt(ptr[0] + n))) {
-                n++;
+            lexer.setAnchor();
+            while (is_symbol(lexer.peek())) {
+                lexer.nextChar();
             }
 
-            String x = s.substring(ptr[0], ptr[0]+n);
-            ptr[0] += n;
-            skip_whitespace(s, ptr);
+            String x = lexer.getAnchor();
+            lexer.skip_whitespace();
             return atom(x);
         } else {
             throw new Error(null, new Environment(), Error.MALFORMED_PROGRAM);
@@ -896,19 +880,20 @@ public class Value {
 
 // Parse an entire program and get its list of expressions.
     static List<Value> parse(String s) { //todo move to other place?
-        int[] i = {0};
-        int  last_i=-1;
+        //int[] i = {0};
+        CharScanner lexer = new CharScanner(s);
+        //int  last_i=-1;
         List<Value> result = new ArrayList<>();
         // While the parser is making progress (while the pointer is moving right)
         // and the pointer hasn't reached the end of the string,
-        while (last_i != i[0] && i[0] <= s.length()-1) {
+        while (lexer.peek()!=0) {
             // Parse another expression and add it to the list.
-            last_i = i[0];
-            result.add(parse(s, i));
+            //last_i = i[0];
+            result.add(parse(lexer));
         }
 
         // If the whole string wasn't parsed, the program must be bad.
-        if (i[0] < s.length())
+        if (!lexer.eof())
             throw new Error(null, new Environment(), Error.MALFORMED_PROGRAM);
 
         // Return the list of values parsed.
