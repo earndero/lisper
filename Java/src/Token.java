@@ -1,9 +1,9 @@
-enum TokenType {Eof, Error, Ident, Int, Float, String, OpCompare,OpArith, At, Sharp}
+enum TT {Eof, Error, LParen, RParen, Ident, Int, Float, String, OpCompare,OpArith, At, Sharp}
 
 public class Token {
-    TokenType type;
+    TT type;
     String value;
-    Token(TokenType type, String value) {
+    Token(TT type, String value) {
         this.type = type;
         this.value= value;;
     }

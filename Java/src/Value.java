@@ -775,71 +775,26 @@ public class Value {
     }
 
 
-    // Parse a single value and increment the pointer
+// Parse a single value and increment the pointer
 // to the beginning of the next value to parse.
-    static Value parse(CharScanner lexer) {
-        lexer.skip_whitespace();
-
-        while (lexer.peek() == ';') {
-            // If this is a comment
-            lexer.skip_comments();
-            lexer.skip_whitespace();
-            if (lexer.eof())
-                return new Value();
-        }
-
-        if (lexer.eof()) {
-            return new Value();
-        } else if (lexer.peek() == '\'') {
-            // If this is a quote
-            lexer.nextChar();
-            return quote(parse(lexer));
-
-        } else if (lexer.peek() == '(') {
+    /*static Value parse(Lexer lexer) {
+        Token tok = lexer.peek();
+        if (tok.type == TT.LParen) {
             // If this is a list
-            lexer.nextChar();
-            lexer.skip_whitespace();
-
             Value result = new Value(new ArrayList<>());
-
-            while (lexer.peek() != ')')
+            while (lexer.get().type != TT.RParen)
                 result.push(parse(lexer));
-
-            lexer.nextChar();
-            lexer.skip_whitespace();
             return result;
 
-        } else if (Character.isDigit(lexer.peek()) ||
-                (lexer.peek() == '-' && Character.isDigit(lexer.peek(1)))) {
-            // If this is a number
-            boolean negate = lexer.peek() == '-';
-            if (negate) lexer.nextChar();
-
-            lexer.setAnchor();
-            while (!lexer.eof() && (Character.isDigit(lexer.peek()) || lexer.peek() == '.'))
-                lexer.nextChar();
-            String n = lexer.getAnchor();
-            lexer.skip_whitespace();
-
-            if (n.indexOf('.') >=0)
-            return new Value((negate? -1 : 1) * Double.parseDouble(n));
-        else return new Value((negate? -1 : 1) * Integer.parseInt(n));
-
-        } else if (lexer.peek() == '\"') {
+        } else if (tok.type == TT.Int) {
+            return new Value( Integer.parseInt(tok.value));
+        } else if (tok.type == TT.Float) {
+            return new Value( Double.parseDouble(tok.value));
+        } else if (tok.type == TT.String) {
             // If this is a string
-            lexer.nextChar();
-            lexer.setAnchor();
-            while (lexer.peek() != '\"') {
-                lexer.nextChar();
-            }
-
-            String x = lexer.getAnchor();
-            lexer.nextChar();
-            lexer.skip_whitespace();
-
             // Iterate over the characters in the string, and
             // replace escaped characters with their intended values.
-            StringBuilder sbx = new StringBuilder();
+*//*            StringBuilder sbx = new StringBuilder();
             int i = 0;
             while (i<x.length()) {
                 if (x.charAt(i) == '\\') {
@@ -856,56 +811,36 @@ public class Value {
                 else sbx.append(x.charAt(i));
                 i++;
             }
-            x = sbx.toString();
-            return string(x);
-        } else if (lexer.peek() == '@') {
-            lexer.nextChar();
-            lexer.skip_whitespace();
+            x = sbx.toString();*//*
+            return string(tok.value);
+        } else if (tok.type==TT.At) {
             return new Value();
-
-        } else if (is_symbol( lexer.peek() )) {
-            // If this is a string
-            lexer.setAnchor();
-            while (is_symbol(lexer.peek())) {
-                lexer.nextChar();
-            }
-
-            String x = lexer.getAnchor();
-            lexer.skip_whitespace();
-            return atom(x);
+        } else if (tok.type==TT.Ident) {
+            return atom(tok.value);
         } else {
             throw new Error(null, new Environment(), Error.MALFORMED_PROGRAM);
         }
-    }
+    }*/
 
 // Parse an entire program and get its list of expressions.
     static List<Value> parse(String s) { //todo move to other place?
-        s = "  sasd \"123\"6 >12;34.5 \"gh\nhh' +-";
+        s = "(print aa (1 2 3) \"Hello world!\")";
         CharScanner scanner = new CharScanner(s);
         Lexer lexer = new Lexer(scanner);
-        while (lexer.next()) {
-            Token token = lexer.peek();
-            System.out.printf("%s %s\n", token.type.toString(), token.value);
-        }
+        List<Value> result = new ArrayList<>();
+        Parser parser = new Parser(lexer);
+        parser.values();
 
         System.exit(0);
-        return null;
-/*
-        List<Value> result = new ArrayList<>();
         // While the parser is making progress (while the pointer is moving right)
         // and the pointer hasn't reached the end of the string,
-        while (scanner.peek()!=0) {
+        /*while (lexer.next()) {
             // Parse another expression and add it to the list.
             //last_i = i[0];
-            result.add(parse(scanner));
-        }
-
-        // If the whole string wasn't parsed, the program must be bad.
-        if (!scanner.eof())
-            throw new Error(null, new Environment(), Error.MALFORMED_PROGRAM);
-
-        // Return the list of values parsed.
-        return result;*/
+            result.add(parse(lexer));
+        }*/
+        System.exit(0);
+        return result;
     }
 
     // Execute code in an environment

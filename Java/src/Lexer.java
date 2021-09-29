@@ -6,15 +6,38 @@ public class Lexer {
         this.scanner = scanner;
     }
 
-    Token peek() {
+    Token la() {
+        if (token==null)
+            getNext();
         return token;
+    }
+
+    void match() {
+        token = null;
     }
 
     static boolean isDigitOrDot(char c) {
         return Character.isDigit(c) || c=='.';
     }
 
-    boolean next() {
+    private Token parseNumber() {
+        scanner.setAnchor();
+        while(isDigitOrDot(scanner.peek()))
+            if (!scanner.nextChar()) break;
+        String s = scanner.getAnchor();
+        if (s.indexOf('.')>=0)
+            token = new Token(TT.Float, s);
+        else
+            token = new Token(TT.Int, s);
+        return token;
+    }
+
+    boolean eof() {
+        scanner.skip_nocode();
+        return scanner.eof();
+    }
+
+    boolean getNext() {
         scanner.skip_nocode();
         if (scanner.eof()) {
             //token = new Token(TokenType.Eof, "");
@@ -22,21 +45,14 @@ public class Lexer {
         }
         char c = scanner.peek();
         if (Character.isDigit(c)) {
-            scanner.setAnchor();
-            while(isDigitOrDot(scanner.peek()))
-                if (!scanner.nextChar()) break;
-            String s = scanner.getAnchor();
-            if (s.indexOf('.')>=0)
-                token = new Token(TokenType.Float, s);
-            else
-                token = new Token(TokenType.Int, s);
+            token = parseNumber();
         }
         else if (Character.isAlphabetic(c)) {
             scanner.setAnchor();
             while ((Character.isAlphabetic(scanner.peek())))
                 if (!scanner.nextChar()) break;
             String s = scanner.getAnchor();
-            token = new Token(TokenType.Ident, s);
+            token = new Token(TT.Ident, s);
         }
         else if (c=='"') {
             scanner.nextChar();
@@ -44,23 +60,31 @@ public class Lexer {
             while ((scanner.peek()!='"'))
                 if (!scanner.nextChar()) break;
             if (scanner.peek()=='"')
-                 token = new Token(TokenType.String, scanner.getAnchor());
+                 token = new Token(TT.String, scanner.getAnchor());
              else
-                 token = new Token(TokenType.Error, scanner.getAnchor());
+                 token = new Token(TT.Error, scanner.getAnchor());
+            scanner.nextChar();
+        }
+        else if (c=='(') {
+            token = new Token(TT.LParen, "(");
+            scanner.nextChar();
+        }
+        else if (c==')') {
+            token = new Token(TT.RParen, ")");
             scanner.nextChar();
         }
         else if (c=='@') {
-            token = new Token(TokenType.At, "@");
+            token = new Token(TT.At, "@");
             scanner.nextChar();
         }
         else if (c=='#') {
-            token = new Token(TokenType.Sharp, "#");
+            token = new Token(TT.Sharp, "#");
             scanner.nextChar();
         }
         else if (c=='=') {
             String s="";
             s+=c;
-            token = new Token(TokenType.OpCompare, s);
+            token = new Token(TT.OpCompare, s);
             scanner.nextChar();
         }
         else if (c=='<' || c=='>') {
@@ -72,20 +96,24 @@ public class Lexer {
                 s+=c1;
                 scanner.nextChar();
             }
-            token = new Token(TokenType.OpCompare, s);
+            token = new Token(TT.OpCompare, s);
         }
         else if (c=='+' || c=='-' || c=='*' || c=='/' || c=='%') {
             String s="";
             s+=c;
-            token = new Token(TokenType.OpArith, s);
             scanner.nextChar();
+            if (c=='-' && Character.isDigit(scanner.peek()))
+                token = parseNumber();
+            else
+                token = new Token(TT.OpArith, s);
         } else {
             String s="";
             s+=c;
-            token = new Token(TokenType.Error, s);
+            token = new Token(TT.Error, s);
             scanner.nextChar();
         }
         //scanner.nextChar();
         return true;
     }
+
 }
