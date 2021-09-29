@@ -838,8 +838,7 @@ public class Value {
         // in this environment.
         for (int i=0; i<parsed.size()-1; i++)
             parsed.get(i).eval(env);
-        return new Value();
         // Return the result of the last expression.
-        //return parsed.get(parsed.size()-1).eval(env);
+        return parsed.get(parsed.size()-1).eval(env);
     }
 }
