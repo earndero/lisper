@@ -24,6 +24,10 @@ public class Lexer {
         return Character.isAlphabetic(c) || c=='_';
     }
 
+    static boolean isAlphaOrUnderHyp(char c) {
+        return isAlphaOrUnder(c) || c=='-';
+    }
+
     private Token parseNumber() {
         scanner.setAnchor();
         while(isDigitOrDot(scanner.peek()))
@@ -53,7 +57,7 @@ public class Lexer {
         }
         else if (isAlphaOrUnder(c)) {
             scanner.setAnchor();
-            while ((isAlphaOrUnder(scanner.peek())))
+            while ((isAlphaOrUnderHyp(scanner.peek())))
                 if (!scanner.nextChar()) break;
             String s = scanner.getAnchor();
             token = new Token(TT.Atom, s);

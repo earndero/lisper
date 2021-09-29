@@ -826,23 +826,8 @@ public class Value {
     static List<Value> parse(String s) { //todo move to other place?
         CharScanner scanner = new CharScanner(s);
         Lexer lexer = new Lexer(scanner);
-        List<Value> result = new ArrayList<>();
         Parser parser = new Parser(lexer);
-        parser.values();
-
-        System.out.println(
-
-        );
-        //System.exit(0);
-        // While the parser is making progress (while the pointer is moving right)
-        // and the pointer hasn't reached the end of the string,
-        /*while (lexer.next()) {
-            // Parse another expression and add it to the list.
-            //last_i = i[0];
-            result.add(parse(lexer));
-        }*/
-
-        return result;
+        return parser.values();
     }
 
     // Execute code in an environment
