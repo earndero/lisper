@@ -40,12 +40,14 @@ public class Environment {
         // Special forms
         if (name.equals("do"))     return new Value("do",     builtin.do_block);
         if (name.equals("if"))     return new Value("if",     builtin.if_then_else);
+        if (name.equals("cond"))   return new Value("cond",     builtin.cond);
         if (name.equals("for"))    return new Value("for",    builtin.for_loop);
         if (name.equals("while"))  return new Value("while",  builtin.while_loop);
         if (name.equals("scope"))  return new Value("scope",  builtin.scope);
         if (name.equals("quote"))  return new Value("quote",  builtin.quote);
         if (name.equals("defun"))  return new Value("defun",  builtin.defun);
         if (name.equals("define")) return new Value("define", builtin.define);
+        if (name.equals("setq")) return new Value("setq", builtin.setq);
         if (name.equals("lambda")) return new Value("lambda", builtin.lambda);
 
         // Comparison operations

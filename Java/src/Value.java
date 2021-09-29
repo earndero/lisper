@@ -12,6 +12,28 @@ public class Value {
     static final String QUOTE_TYPE = "quote";
     static final String LIST_TYPE = "list";
 
+    public Value car() {
+        if (type!=Type.LIST)
+            return null;
+        else if (list.size()==0)
+            return null;
+        else
+            return list.get(0);
+    }
+
+    public List<Value> cdr() {
+        if (type!=Type.LIST)
+            return null;
+        else if (list.size()<2)
+            return null;
+        else {
+            List<Value> result = new ArrayList<>();
+            for (int i=1; i<list.size(); i++)
+                result.add(list.get(i));
+            return result;
+        }
+    }
+
     enum Type {QUOTE, ATOM, INT, FLOAT, LIST,STRING,
         LAMBDA, BUILTIN, UNIT};
 

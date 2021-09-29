@@ -70,12 +70,52 @@ public class builtin {
         }
     };
 
+    // cond (SPECIAL FORM)
+    static Builtin cond = new Builtin() {
+        @Override
+        public Value apply(Param p) {
+            if (p.args.size() == 0)
+                throw new Error(new Value("cond", cond), p.env, Error.TOO_FEW_ARGS);
+            for (Value arg:p.args)
+                if (arg.car()!=null)
+                if (arg.car().eval(p.env).as_bool()) {
+                    List<Value> cdr = arg.cdr();
+                    if (cdr!=null && cdr.size()>0) {
+                        for (int i=0; i<cdr.size()-1; i++)
+                            cdr.get(i).eval(p.env);
+                        return cdr.get(cdr.size()-1).eval(p.env);
+                    }
+                    else
+                        return new Value();
+                }
+            return new Value();
+//
+//
+//            if (p.args.get(0).eval(p.env).as_bool())
+//                return p.args.get(1).eval(p.env);
+//            else return p.args.get(2).eval(p.env);
+        }
+    };
+
     // Define a variable with a value (SPECIAL FORM)
     static Builtin define = new Builtin() {
         @Override
         public Value apply(Param p) {
             if (p.args.size() != 2)
                 throw new Error(new Value("define", define), p.env, p.args.size() > 2 ? Error.TOO_MANY_ARGS : Error.TOO_FEW_ARGS);
+
+            Value result = p.args.get(1).eval(p.env);
+            p.env.set(p.args.get(0).display(), result);
+            return result;
+        }
+    };
+
+    // Define a variable with a value (SPECIAL FORM)
+    static Builtin setq = new Builtin() {
+        @Override
+        public Value apply(Param p) {
+            if (p.args.size() != 2)
+                throw new Error(new Value("setq", setq), p.env, p.args.size() > 2 ? Error.TOO_MANY_ARGS : Error.TOO_FEW_ARGS);
 
             Value result = p.args.get(1).eval(p.env);
             p.env.set(p.args.get(0).display(), result);
