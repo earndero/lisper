@@ -824,14 +824,16 @@ public class Value {
 
 // Parse an entire program and get its list of expressions.
     static List<Value> parse(String s) { //todo move to other place?
-        s = "(print aa (1 2 3) \"Hello world!\")";
         CharScanner scanner = new CharScanner(s);
         Lexer lexer = new Lexer(scanner);
         List<Value> result = new ArrayList<>();
         Parser parser = new Parser(lexer);
         parser.values();
 
-        System.exit(0);
+        System.out.println(
+
+        );
+        //System.exit(0);
         // While the parser is making progress (while the pointer is moving right)
         // and the pointer hasn't reached the end of the string,
         /*while (lexer.next()) {
@@ -839,7 +841,7 @@ public class Value {
             //last_i = i[0];
             result.add(parse(lexer));
         }*/
-        System.exit(0);
+
         return result;
     }
 
@@ -851,9 +853,9 @@ public class Value {
         // in this environment.
         for (int i=0; i<parsed.size()-1; i++)
             parsed.get(i).eval(env);
-
+        return new Value();
         // Return the result of the last expression.
-        return parsed.get(parsed.size()-1).eval(env);
+        //return parsed.get(parsed.size()-1).eval(env);
     }
 
 }
