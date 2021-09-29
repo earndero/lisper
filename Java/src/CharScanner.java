@@ -17,7 +17,7 @@ public class CharScanner {
     }
 
     static boolean is_space(char ch) {
-        return Character.isSpaceChar(ch) || ch==10 || ch==13;
+        return Character.isSpaceChar(ch) || ch==10 || ch==13 || ch=='\t';
     }
 
     public void skip_whitespace() {
