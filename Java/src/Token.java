@@ -1,4 +1,4 @@
-enum TT {Eof, Error, LParen, RParen, Ident, Int, Float, String, OpCompare,OpArith, At, Sharp}
+enum TT {Eof, Error, LParen, RParen, Atom, Int, Float, String, Quote, OpCompare,OpArith, At, Sharp}
 
 public class Token {
     TT type;

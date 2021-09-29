@@ -20,6 +20,10 @@ public class Lexer {
         return Character.isDigit(c) || c=='.';
     }
 
+    static boolean isAlphaOrUnder(char c) {
+        return Character.isAlphabetic(c) || c=='_';
+    }
+
     private Token parseNumber() {
         scanner.setAnchor();
         while(isDigitOrDot(scanner.peek()))
@@ -47,12 +51,12 @@ public class Lexer {
         if (Character.isDigit(c)) {
             token = parseNumber();
         }
-        else if (Character.isAlphabetic(c)) {
+        else if (isAlphaOrUnder(c)) {
             scanner.setAnchor();
-            while ((Character.isAlphabetic(scanner.peek())))
+            while ((isAlphaOrUnder(scanner.peek())))
                 if (!scanner.nextChar()) break;
             String s = scanner.getAnchor();
-            token = new Token(TT.Ident, s);
+            token = new Token(TT.Atom, s);
         }
         else if (c=='"') {
             scanner.nextChar();
@@ -81,6 +85,10 @@ public class Lexer {
             token = new Token(TT.Sharp, "#");
             scanner.nextChar();
         }
+        else if (c=='\'') {
+            token = new Token(TT.Quote, "'");
+            scanner.nextChar();
+        }
         else if (c=='=') {
             String s="";
             s+=c;
@@ -97,6 +105,17 @@ public class Lexer {
                 scanner.nextChar();
             }
             token = new Token(TT.OpCompare, s);
+        }
+        else if (c=='!') {
+            String s="";
+            s+=c;
+            scanner.nextChar();
+            char c1 = scanner.peek();
+            if (c1=='=') {
+                s+=c1;
+                scanner.nextChar();
+                token = new Token(TT.OpCompare, s);
+            } else token = new Token(TT.Error, s);
         }
         else if (c=='+' || c=='-' || c=='*' || c=='/' || c=='%') {
             String s="";

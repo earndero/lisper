@@ -23,13 +23,23 @@ public class Parser {
     }
 
     Value value() {
-        if (lexer.la().type==TT.LParen) {
+        Token tok = lexer.la();
+        if (tok.type==TT.LParen) {
             List<Value> l = list();
             return new Value(l);
         }
         else {
-            atom();
-            return null;//todo 
+            lexer.match();
+            switch(tok.type) {
+                case At: return new Value();
+                case String: return Value.string(tok.value);
+                case Atom:case OpCompare:case OpArith:  return Value.atom(tok.value);
+                case Int: return new Value(Integer.parseInt(tok.value));
+                case Float: return new Value(Double.parseDouble(tok.value));
+                case Quote: return Value.quote(value());
+                default:
+                    throw new Error(null, new Environment(), Error.MALFORMED_PROGRAM);
+            }
         }
     }
 
