@@ -793,7 +793,8 @@ public class Value {
 
     // Is this character a valid lisp symbol character
     static boolean is_symbol(char ch) {
-        return (Character.isAlphabetic(ch) || is_punct(ch)) && ch != '(' && ch != ')' && ch != '"' && ch != '\'';
+        return (Character.isAlphabetic(ch) || is_punct(ch)) && ch != '(' && ch != ')' && ch != '"' && ch != '\''
+                && ch != '#';
     }
 
 
