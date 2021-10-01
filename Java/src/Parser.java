@@ -22,6 +22,22 @@ public class Parser {
         return result;
     }
 
+    StartValue start_value() {
+        Token tok = lexer.la();
+        StartValue sv = null;
+        if (tok.type==TT.LParen) {
+            List<Value> l = list();
+            sv = new StartValue(l);
+        } else
+            throw new Error(null, new Environment(), Error.EXPRESSION_NO_LIST);
+        tok = lexer.la();
+        if (tok.value.equals("=>") || tok.value.equals("=e>")) {
+            lexer.readToEol();
+            lexer.getNext();
+        }
+        return sv;
+    }
+
     Value value() {
         Token tok = lexer.la();
         if (tok.type==TT.LParen) {
@@ -48,7 +64,7 @@ public class Parser {
     List<Value> values() {
         List<Value> result = new ArrayList<>();
         while (!lexer.eof()) {
-            Value v = value();
+            StartValue v = start_value();
             result.add(v);
         }
         return result;

@@ -15,6 +15,14 @@ public class CharScanner {
         else return false;
     }
 
+    boolean nextCharEol() {
+        if (position<s.length() && !isLineBreak(s.charAt(position))) {
+            position++;
+            return true;
+        }
+        else return false;
+    }
+
     static boolean is_space(char ch) {
         return Character.isSpaceChar(ch) || ch==10 || ch==13 || ch=='\t';
     }

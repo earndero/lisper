@@ -34,7 +34,7 @@ public class Main {
                     e.printStackTrace();
                 }
             } else if (!input.equals("")) {
-                tmp = Value.run(input, env);
+                tmp = Runner.run(input, env);
                 System.out.println(" => " + tmp.debug() );
                 code += input + "\n";
             }
@@ -52,12 +52,13 @@ public class Main {
             args.add(Value.string(argv[i]));
         env.set("cmd-args", new Value(args));
         int argc = argv.length;
-        Value.run(builtin.read_file_contents("examples/v/cond.lisp"), env);
-        Value.run(builtin.read_file_contents("examples/hello_world.lisp"), env);
-        Value.run(builtin.read_file_contents("examples/odd_even.lisp"), env);
-        Value.run(builtin.read_file_contents("examples/loops.lisp"), env);
-        Value.run(builtin.read_file_contents("examples/math.lisp"), env);
-        Value.run(builtin.read_file_contents("examples/list.lisp"), env);
+        Runner.run(builtin.read_file_contents("examples/inc_dec.lisp"), env);
+//        Value.run(builtin.read_file_contents("examples/v/cond.lisp"), env);
+//        Value.run(builtin.read_file_contents("examples/hello_world.lisp"), env);
+//        Value.run(builtin.read_file_contents("examples/odd_even.lisp"), env);
+//        Value.run(builtin.read_file_contents("examples/loops.lisp"), env);
+//        Value.run(builtin.read_file_contents("examples/math.lisp"), env);
+//        Value.run(builtin.read_file_contents("examples/list.lisp"), env);
         //#ifdef USE_STD
 /*
         if (argc == 0 || (argc == 1 && argv[0].equals("-i")))

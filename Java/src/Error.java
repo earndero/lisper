@@ -17,6 +17,8 @@ public class Error extends java.lang.Error {
     static final String INDEX_OUT_OF_RANGE = "index out of range";
     static final String MALFORMED_PROGRAM = "malformed program";
     static final String NO_LIBM_SUPPORT = "no libm support";
+    static final String EXPRESSION_NO_LIST = "expression no list";
+
 
     Value cause;
     Environment env;

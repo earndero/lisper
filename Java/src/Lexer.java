@@ -20,12 +20,16 @@ public class Lexer {
         return Character.isDigit(c) || c=='.';
     }
 
-    static boolean isAlphaOrUnder(char c) {
-        return Character.isAlphabetic(c) || c=='_';
+    static boolean is_punct(char ch) {
+        return (ch>=33 && ch<=47)||(ch>=58 && ch<=64)||(ch>=91 && ch<=96)
+                ||(ch>=123 && ch<=126);
     }
 
-    static boolean isAlphaOrUnderHyp(char c) {
-        return isAlphaOrUnder(c) || c=='-';
+    // Is this character a valid lisp symbol character
+    static boolean is_symbol(char ch) {
+        return (Character.isAlphabetic(ch) || Character.isDigit(ch) || is_punct(ch))
+                && ch != '(' && ch != ')' && ch != '"' && ch != '\''
+                && ch != '#';
     }
 
     private Token parseNumber() {
@@ -40,6 +44,63 @@ public class Lexer {
         return token;
     }
 
+    /*
+    * -1: not number
+    * 0: integer, digits, can be start with + or -, no dots, not "s" or "d" or "e"
+    * 1: float: single dot
+    * 2: float no dot, exponent e
+    * 3: dot and exponent e
+    * 4: float no dot, exponent s
+    * 5: dot and exponent s
+    * 6: float no dot, exponent d
+    * 7: dot and exponent d
+    * */
+    private int checkNumber(String s) {
+        if (s.isEmpty()) return -1;
+        int pos = 0;
+        if (s.charAt(0)=='+' || s.charAt(0)=='-')
+            pos++;
+        if (s.length()<pos+1) return -1;
+        int numDots = 0;
+        int numDigits = 0;
+        while (pos<s.length()) {
+            char c = s.charAt(pos);
+            if (c=='.') {
+                if (numDots>0) return -1;
+                numDots++;
+            } else {
+                if (Character.isDigit(c))
+                    numDigits++;
+                else
+                    break;
+            }
+            pos++;
+        }
+        if (numDigits==0) return -1;
+        if (pos>=s.length()) {
+            if (numDots==0) return 0;
+            else return 1;
+        }
+        int numtype;
+        char c = Character.toLowerCase(s.charAt(pos));
+        if (c=='e') numtype=2;
+        else if (c=='s') numtype=4;
+        else if (c=='d') numtype=6;
+        else return -1;
+        if (numDots>0) numtype++;
+        pos++;
+        if (pos>=s.length()) return -1;
+        c = s.charAt(pos);
+        if (s.charAt(pos)=='+' || s.charAt(pos)=='-')
+            pos++;
+        if (s.length()<pos+1) return -1;
+        while (pos<s.length()) {
+            if (!Character.isDigit(s.charAt(pos))) return -1;
+            pos++;
+        }
+        return numtype;
+    }
+
     boolean eof() {
         scanner.skip_nocode();
         return scanner.eof();
@@ -48,29 +109,18 @@ public class Lexer {
     boolean getNext() {
         scanner.skip_nocode();
         if (scanner.eof()) {
-            //token = new Token(TokenType.Eof, "");
             return false;
         }
         char c = scanner.peek();
-        if (Character.isDigit(c)) {
-            token = parseNumber();
-        }
-        else if (isAlphaOrUnder(c)) {
-            scanner.setAnchor();
-            while ((isAlphaOrUnderHyp(scanner.peek())))
-                if (!scanner.nextChar()) break;
-            String s = scanner.getAnchor();
-            token = new Token(TT.Symbol, TST.Ident, s);
-        }
-        else if (c=='"') {
+        if (c=='"') {
             scanner.nextChar();
             scanner.setAnchor();
             while ((scanner.peek()!='"'))
                 if (!scanner.nextChar()) break;
             if (scanner.peek()=='"')
-                 token = new Token(TT.String, TST.NoSymbol, scanner.getAnchor());
-             else
-                 token = new Token(TT.Error, TST.NoSymbol, scanner.getAnchor());
+                token = new Token(TT.String, TST.NoSymbol, scanner.getAnchor());
+            else
+                token = new Token(TT.Error, TST.NoSymbol, scanner.getAnchor());
             scanner.nextChar();
         }
         else if (c=='(') {
@@ -95,51 +145,25 @@ public class Lexer {
         else if (c=='\'') {
             token = new Token(TT.Quote, TST.NoSymbol, "'");
             scanner.nextChar();
-        }
-        else if (c=='=') {
-            String s="";
-            s+=c;
-            token = new Token(TT.Symbol, TST.Ident, s);
-            scanner.nextChar();
-        }
-        else if (c=='<' || c=='>') {
-            String s="";
-            s+=c;
-            scanner.nextChar();
-            char c1 = scanner.peek();
-            if (c1=='=') {
-                s+=c1;
-                scanner.nextChar();
+        } else if (is_symbol(c)) {
+            scanner.setAnchor();
+            while ((is_symbol(scanner.peek())))
+                if (!scanner.nextChar()) break;
+            String s = scanner.getAnchor();
+            int n = checkNumber(s);
+            if (n<0)
+                token = new Token(TT.Symbol, TST.Ident, s);
+            else if (n==0)
+                token = new Token(TT.Symbol, TST.Int, s);
+            else {
+                token = new Token(TT.Symbol, TST.Float, s);
+                token.numType= n;
             }
-            token = new Token(TT.Symbol, TST.Ident, s);
         }
-        else if (c=='!') {
-            String s="";
-            s+=c;
-            scanner.nextChar();
-            char c1 = scanner.peek();
-            if (c1=='=') {
-                s+=c1;
-                scanner.nextChar();
-                token = new Token(TT.Symbol, TST.Ident, s);
-            } else token = new Token(TT.Error,TST.NoSymbol, s);
-        }
-        else if (c=='+' || c=='-' || c=='*' || c=='/' || c=='%') {
-            String s="";
-            s+=c;
-            scanner.nextChar();
-            if (c=='-' && Character.isDigit(scanner.peek()))
-                token = parseNumber();
-            else
-                token = new Token(TT.Symbol, TST.Ident, s);
-        } else {
-            String s="";
-            s+=c;
-            token = new Token(TT.Error,TST.NoSymbol, s);
-            scanner.nextChar();
-        }
-        //scanner.nextChar();
         return true;
     }
 
+    public void readToEol() {
+        while (scanner.nextCharEol());
+    }
 }

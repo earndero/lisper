@@ -313,18 +313,6 @@ public class builtin {
         }
     };
 
-    static Value run(String code, Environment env) {
-        // Parse the code
-        List<Value> parsed = Value.parse(code);
-        // Iterate over the expressions and evaluate them
-        // in this environment.
-        for (int i=0; i<parsed.size()-1; i++)
-            parsed.get(i).eval(env);
-
-        // Return the result of the last expression.
-        return parsed.get(parsed.size()-1).eval(env);
-    }
-
     // Read a file and execute its code
     static Builtin include = new Builtin() {
         @Override
@@ -338,7 +326,7 @@ public class builtin {
 
             Environment e = new Environment();
             Value result = null;
-            result = run(read_file_contents(p.args.get(0).as_string()), e);
+            result = Runner.run(read_file_contents(p.args.get(0).as_string()), e);
             p.env.combine(e);
             return result;
         }
@@ -743,7 +731,7 @@ public class builtin {
                 throw new Error(new Value("parse", parse), p.env, p.args.size() > 1 ? Error.TOO_MANY_ARGS : Error.TOO_FEW_ARGS);
             if (!p.args.get(0).get_type_name().equals(Value.STRING_TYPE))
                 throw new Error(p.args.get(0), p.env, Error.INVALID_ARGUMENT);
-            List<Value> parsed = Value.parse(p.args.get(0).as_string());
+            List<Value> parsed = Runner.parse(p.args.get(0).as_string());
 
             // if (parsed.size() == 1)
             //     return parsed.get(0);
