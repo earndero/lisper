@@ -10,7 +10,6 @@ public class CharScanner {
     boolean nextChar() {
         if (position<s.length()) {
             position++;
-            if (isLineBreak(peek())) return false;
             return true;
         }
         else return false;
