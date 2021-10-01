@@ -52,13 +52,12 @@ public class Main {
             args.add(Value.string(argv[i]));
         env.set("cmd-args", new Value(args));
         int argc = argv.length;
-        Value.run(builtin.read_file_contents("examples/cond.lisp"), env);
-        /*Value.run(builtin.read_file_contents("examples/hello_world.lisp"), env);
+        Value.run(builtin.read_file_contents("examples/v/cond.lisp"), env);
+        Value.run(builtin.read_file_contents("examples/hello_world.lisp"), env);
         Value.run(builtin.read_file_contents("examples/odd_even.lisp"), env);
-        Value.run(builtin.read_file_contents("examples/io.lisp"), env);
         Value.run(builtin.read_file_contents("examples/loops.lisp"), env);
         Value.run(builtin.read_file_contents("examples/math.lisp"), env);
-        Value.run(builtin.read_file_contents("examples/list.lisp"), env);*/
+        Value.run(builtin.read_file_contents("examples/list.lisp"), env);
         //#ifdef USE_STD
 /*
         if (argc == 0 || (argc == 1 && argv[0].equals("-i")))
