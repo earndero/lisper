@@ -1,7 +1,9 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -52,7 +54,20 @@ public class Main {
             args.add(Value.string(argv[i]));
         env.set("cmd-args", new Value(args));
         int argc = argv.length;
-        Runner.run(builtin.read_file_contents("examples/v/div.lisp"), env);
+        File f = new File("examples/v");
+        FilenameFilter filter = new FilenameFilter() {
+            @Override
+            public boolean accept(File f, String name) {
+                return name.endsWith(".lisp");
+            }
+        };
+        String[] pathnames = f.list();
+        Arrays.sort(pathnames);
+        for (String pathname : pathnames) {
+            System.out.println(pathname);
+            Runner.run(builtin.read_file_contents("examples/v/"+pathname), env);
+        }
+
         //Runner.run(builtin.read_file_contents("examples/inc_dec.lisp"), env);
 //        Value.run(builtin.read_file_contents("examples/v/cond.lisp"), env);
 //        Value.run(builtin.read_file_contents("examples/hello_world.lisp"), env);
