@@ -2,6 +2,7 @@ import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Value {
     static final String STRING_TYPE = "string";
@@ -12,6 +13,7 @@ public class Value {
     static final String ATOM_TYPE = "atom";
     static final String QUOTE_TYPE = "quote";
     static final String LIST_TYPE = "list";
+    public String defun_name = null;
 
     public Value car() {
         if (type!=Type.LIST)
@@ -105,7 +107,7 @@ public class Value {
         result.type = Type.ATOM;
 
         // We use the `str` member to store the atom.
-        result.str = s;
+        result.str = s.toUpperCase(Locale.ROOT);
         return result;
     }
 
@@ -635,11 +637,15 @@ public class Value {
             case STRING:
                 return str;
             case LAMBDA:
-                for (int i=0; i<list.size(); i++) {
-                    result += list.get(i).debug();
-                    if (i < list.size()-1) result += " ";
+                if (defun_name!=null)
+                    return defun_name;
+                else {
+                    for (int i = 0; i < list.size(); i++) {
+                        result += list.get(i).debug();
+                        if (i < list.size() - 1) result += " ";
+                    }
+                    return "(lambda " + result + ")";
                 }
-                return "(lambda " + result + ")";
             case LIST:
                 for (int i=0; i<list.size(); i++) {
                     result += list.get(i).debug();

@@ -134,9 +134,9 @@ public class builtin {
 
             if (p.args.get(1).get_type_name() != Value.LIST_TYPE)
                 throw new Error(new Value("defun", defun), p.env, Error.INVALID_LAMBDA);
-
             Value f = new Value(p.args.get(1).as_list(), p.args.get(2), p.env);
             p.env.set(p.args.get(0).display(), f);
+            f.defun_name = p.args.get(0).display();
             return f;
         }
     };

@@ -63,18 +63,12 @@ public class Main {
         };
         String[] pathnames = f.list();
         Arrays.sort(pathnames);
-        for (String pathname : pathnames) {
-            System.out.println(pathname);
-            Runner.run(builtin.read_file_contents("examples/v/"+pathname), env);
-        }
+//        for (String pathname : pathnames) {
+//            System.out.println(pathname);
+//            Runner.run(builtin.read_file_contents("examples/v/"+pathname), env);
+//        }
 
-        //Runner.run(builtin.read_file_contents("examples/inc_dec.lisp"), env);
-//        Value.run(builtin.read_file_contents("examples/v/cond.lisp"), env);
-//        Value.run(builtin.read_file_contents("examples/hello_world.lisp"), env);
-//        Value.run(builtin.read_file_contents("examples/odd_even.lisp"), env);
-//        Value.run(builtin.read_file_contents("examples/loops.lisp"), env);
-//        Value.run(builtin.read_file_contents("examples/math.lisp"), env);
-//        Value.run(builtin.read_file_contents("examples/list.lisp"), env);
+        Runner.run(builtin.read_file_contents("examples/v/def_values.lisp"), env);
         //#ifdef USE_STD
 /*
         if (argc == 0 || (argc == 1 && argv[0].equals("-i")))

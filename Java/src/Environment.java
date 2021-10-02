@@ -1,6 +1,7 @@
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 // An instance of a function's scope.
@@ -44,6 +45,7 @@ public class Environment {
 
     // Get the value associated with this name in this scope
     Value get(String name) {
+        name = name.toLowerCase(Locale.ROOT);
         // Meta operations
         if (name.equals("eval"))  return new Value("eval",  builtin.eval);
         if (name.equals("type"))  return new Value("type",  builtin.get_type_name);
