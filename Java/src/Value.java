@@ -644,7 +644,7 @@ public class Value {
                         result += list.get(i).debug();
                         if (i < list.size() - 1) result += " ";
                     }
-                    return "(lambda " + result + ")";
+                    return "#<FUNCTION :LAMBDA " + result + ">";
                 }
             case LIST:
                 for (int i=0; i<list.size(); i++) {

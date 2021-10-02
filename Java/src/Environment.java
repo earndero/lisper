@@ -128,13 +128,12 @@ public class Environment {
         // Constants
         if (name.equals("endl")) return Value.string("\n");
 
-
-        Value value = defs.get(name);
+        Value value = defs.get(name.toUpperCase(Locale.ROOT));
         if (value!=null) return value;
         else if (parent_scope != null) {
-            value = parent_scope.defs.get(name);
+            value = parent_scope.defs.get(name.toUpperCase(Locale.ROOT));
             if (value!=null) return value;
-            else return parent_scope.get(name);
+            else return parent_scope.get(name.toUpperCase(Locale.ROOT));
         }
         throw new Error(Value.atom(name), this, Error.ATOM_NOT_DEFINED);
     }
