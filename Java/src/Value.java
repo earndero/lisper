@@ -43,6 +43,7 @@ public class Value {
     private List<Value> list = new ArrayList<>();
     private Environment lambda_scope = new Environment();
 
+    private boolean isKeyArgument = false;
     private Type type;
     private String str;
     private Object stack_data; //union int i; double f; Builtin b;
@@ -755,8 +756,13 @@ public class Value {
         }
     }
 
-    // Evaluate this value as lisp code.
     Value eval(Environment env) {
+        return eval(env, false);
+    }
+
+
+    // Evaluate this value as lisp code.
+    Value eval(Environment env, boolean isArgument) {
         List<Value> args;
         Value function;
         Environment e;
@@ -778,7 +784,7 @@ public class Value {
 
                 if (!function.is_builtin())
                     for (int i=0; i<args.size(); i++)
-                        args.set(i, args.get(i).eval(env));
+                        args.set(i, args.get(i).eval(env, true));
 
                 Value ret = function.apply(
                         args,
