@@ -1,4 +1,3 @@
 Todo:
-- no CharScanner, only Lexer, semicolon can be in strings, strings can have more
-than one line, ident names can contains symbols
+- strings can contains \"
 - integer -> BigNum; prefer rational over float
