@@ -16,24 +16,7 @@ public class Runner {
         return parser.values();
     }
 
-    // Execute code in an environment
-    static Value run(String code, Environment env) {
-        // Parse the code
-        List<StartValue> parsed = parse_start(code);
-        // Iterate over the expressions and evaluate them
-        // in this environment.
-        for (int i=0; i<parsed.size()-1; i++) {
-            StartValue arg = parsed.get(i);
-            Value value = arg.eval(env);
-            if (arg.testResult==null)
-                System.out.println(value.display());
-            else if (value.display().equals((arg.testResult)))
-                System.out.println("OK");
-            else
-                System.out.println("diff: "+value.display()+" <-> "+arg.testResult);
-        }
-        // Return the result of the last expression.
-        StartValue arg = parsed.get(parsed.size()-1); //todo redyntant
+    static Value print_eval(StartValue arg, Environment env) {
         Value value = arg.eval(env);
         if (arg.testResult==null)
             System.out.println(value.display());
@@ -42,5 +25,17 @@ public class Runner {
         else
             System.out.println("diff: "+value.display()+" <-> "+arg.testResult);
         return value;
+    }
+
+    // Execute code in an environment
+    static Value run(String code, Environment env) {
+        // Parse the code
+        List<StartValue> parsed = parse_start(code);
+        // Iterate over the expressions and evaluate them
+        // in this environment.
+        for (int i=0; i<parsed.size()-1; i++)
+            print_eval(parsed.get(i), env);
+        // Return the result of the last expression.
+        return print_eval(parsed.get(parsed.size()-1), env);
     }
 }
