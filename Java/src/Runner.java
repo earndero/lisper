@@ -22,9 +22,15 @@ public class Runner {
         List<StartValue> parsed = parse_start(code);
         // Iterate over the expressions and evaluate them
         // in this environment.
-        for (int i=0; i<parsed.size()-1; i++)
-            parsed.get(i).eval(env);
+        for (int i=0; i<parsed.size()-1; i++) {
+            StartValue arg = parsed.get(i);
+            Value value = arg.eval(env);
+            System.out.println(value.display());
+        }
         // Return the result of the last expression.
-        return parsed.get(parsed.size()-1).eval(env);
+        StartValue arg = parsed.get(parsed.size()-1);
+        Value value = arg.eval(env);
+        System.out.println(value.display());
+        return value;
     }
 }
