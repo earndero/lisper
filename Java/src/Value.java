@@ -194,7 +194,7 @@ public class Value {
             case FLOAT:
                 return (double)stack_data != 0.0;
             case INT:
-                return ((BigInteger)stack_data).equals(BigInteger.ZERO);
+                return !((BigInteger)stack_data).equals(BigInteger.ZERO);
             case BUILTIN:
                 return stack_data != null;
             case STRING:
@@ -769,10 +769,11 @@ public class Value {
                     for (int i=0; i<args.size(); i++)
                         args.set(i, args.get(i).eval(env));
 
-                return function.apply(
+                Value ret = function.apply(
                         args,
                         env
                 );
+                return ret;
 
             default:
                 return clone();
