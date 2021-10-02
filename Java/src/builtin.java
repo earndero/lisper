@@ -237,7 +237,6 @@ public class builtin {
                 if (i < p.args.size() - 1)
                     System.out.print(" ");
             }
-            System.out.println();
             return acc;
         }
     };

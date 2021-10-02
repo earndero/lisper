@@ -68,7 +68,7 @@ public class Main {
 //            Runner.run(builtin.read_file_contents("examples/v/"+pathname), env);
 //        }
 
-        Runner.run(builtin.read_file_contents("examples/v/key_params.lisp"), env);
+        Runner.run(builtin.read_file_contents("examples/v/lambda_key.lisp"), env);
         //#ifdef USE_STD
 /*
         if (argc == 0 || (argc == 1 && argv[0].equals("-i")))

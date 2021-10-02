@@ -170,14 +170,13 @@ public class Environment {
 
     void set(String name, Value value) {
         defs.put(name, value.clone());
-        if (value.keyParamOnPosition >=0) {
+        if (value.type==Value.Type.LAMBDA && value.keyParamOnPosition < value.as_list().size()) {
             Value params = value.car();
             List<Value> clonedList = params.as_list();
             for (Value v: clonedList) {
                 if (v.isKeyParam)
                     defs.put(":"+v.display(), v); //todo here will default values!
             }
-            System.out.println();
         }
     }
 

@@ -44,8 +44,8 @@ public class Value {
     private Environment lambda_scope = new Environment();
 
     boolean isKeyParam = false;
-    int keyParamOnPosition = -1;
-    private Type type;
+    int keyParamOnPosition=0;
+    Type type;
     private String str;
     private Object stack_data; //union int i; double f; Builtin b;
 
@@ -133,14 +133,15 @@ public class Value {
 
         //new params search &Key parameter and set
         List<Value> new_params = new ArrayList<>();
+        keyParamOnPosition = params.size(); //if not found &Key, all will be not keyed
         for (int i=0; i<params.size(); i++) {
             Value value = params.get(i);
             if (value.display().equals("&KEY"))
             {
-              if (keyParamOnPosition <0)
-                  keyParamOnPosition = i;
+                if (i<keyParamOnPosition)
+                    keyParamOnPosition = i;
             } else {
-                if (keyParamOnPosition >=0)
+                if (keyParamOnPosition < params.size())
                     value.isKeyParam = true;
                 new_params.add(value);
             }
@@ -271,7 +272,7 @@ public class Value {
     // Get this item's list value
     List<Value> as_list() {
         // If this item is not a list, throw a cast error.
-        if (type != Type.LIST)
+        if (type != Type.LIST && type != Type.LAMBDA)
             throw new Error(this, new Environment(), Error.BAD_CAST);
         return clone_list(list); //todo must be clone?
     }
@@ -751,7 +752,7 @@ public class Value {
                 for (Value arg: args)
                     if (arg.isKeyParam)
                         keyArgsCount++;
-                int needKeyParams = keyParamOnPosition >=0?params.size() - keyParamOnPosition :0;
+                int needKeyParams = params.size() - keyParamOnPosition;
                 if (params.size() != args.size()-needKeyParams)
                     throw new Error(new Value(args), env, args.size()-needKeyParams > params.size()?
                             Error.TOO_MANY_ARGS : Error.TOO_FEW_ARGS
