@@ -106,6 +106,20 @@ public class Lexer {
         return scanner.eof();
     }
 
+    Token readString() {
+        Token tok;
+        scanner.nextChar();
+        scanner.setAnchor();
+        while ((scanner.peek()!='"'))
+            if (!scanner.nextChar()) break;
+        if (scanner.peek()=='"')
+            tok = new Token(TT.String, TST.NoSymbol, scanner.getAnchor());
+        else
+            tok = new Token(TT.Error, TST.NoSymbol, scanner.getAnchor());
+        scanner.nextChar();
+        return tok;
+    }
+
     boolean getNext() {
         scanner.skip_nocode();
         if (scanner.eof()) {
@@ -113,15 +127,7 @@ public class Lexer {
         }
         char c = scanner.peek();
         if (c=='"') {
-            scanner.nextChar();
-            scanner.setAnchor();
-            while ((scanner.peek()!='"'))
-                if (!scanner.nextChar()) break;
-            if (scanner.peek()=='"')
-                token = new Token(TT.String, TST.NoSymbol, scanner.getAnchor());
-            else
-                token = new Token(TT.Error, TST.NoSymbol, scanner.getAnchor());
-            scanner.nextChar();
+            token = readString();
         }
         else if (c=='(') {
             token = new Token(TT.LParen,  TST.NoSymbol, "(");
