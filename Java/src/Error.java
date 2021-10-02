@@ -18,6 +18,7 @@ public class Error extends java.lang.Error {
     static final String MALFORMED_PROGRAM = "malformed program";
     static final String NO_LIBM_SUPPORT = "no libm support";
     static final String EXPRESSION_NO_LIST = "expression no list";
+    static final String NOT_FOUND_KEY_ARG = "not found key arg";
 
 
     Value cause;

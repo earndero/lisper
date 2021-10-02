@@ -44,7 +44,7 @@ public class Value {
     private Environment lambda_scope = new Environment();
 
     boolean isKeyParam = false;
-    int keyArgOnPosition = -1;
+    int keyParamOnPosition = -1;
     private Type type;
     private String str;
     private Object stack_data; //union int i; double f; Builtin b;
@@ -60,7 +60,7 @@ public class Value {
     protected Value clone() {
         Value cloned = new Value();
         cloned.isKeyParam = isKeyParam;
-        cloned.keyArgOnPosition = keyArgOnPosition;
+        cloned.keyParamOnPosition = keyParamOnPosition;
         cloned.stack_data = stack_data;
         cloned.lambda_scope = lambda_scope.clone();
         cloned.list = clone_list(list);
@@ -137,10 +137,10 @@ public class Value {
             Value value = params.get(i);
             if (value.display().equals("&KEY"))
             {
-              if (keyArgOnPosition<0)
-                  keyArgOnPosition = i;
+              if (keyParamOnPosition <0)
+                  keyParamOnPosition = i;
             } else {
-                if (keyArgOnPosition>=0)
+                if (keyParamOnPosition >=0)
                     value.isKeyParam = true;
                 new_params.add(value);
             }
@@ -732,6 +732,13 @@ public class Value {
         os.write(display());
     }
 
+    Value argForKeyParam(List<Value> args, int start, String paramName, Environment env) {//todo Error not must have Envirponment?
+        for (int i=start; i<args.size()-1; i+=2)
+            if (args.get(i).str.equals(paramName))
+                return args.get(i+1);
+        throw new Error(this, env, Error.NOT_FOUND_KEY_ARG);
+    }
+
     // Apply this as a function to a list of arguments in a given environment.
     Value apply(List<Value> args, Environment env) {
         Environment e;
@@ -740,8 +747,13 @@ public class Value {
             case LAMBDA:
                 // Get the list of parameter atoms
                 params = list.get(0).list;
-                if (params.size() != args.size())
-                    throw new Error(new Value(args), env, args.size() > params.size()?
+                int keyArgsCount = 0;
+                for (Value arg: args)
+                    if (arg.isKeyParam)
+                        keyArgsCount++;
+                int needKeyParams = keyParamOnPosition >=0?params.size() - keyParamOnPosition :0;
+                if (params.size() != args.size()-needKeyParams)
+                    throw new Error(new Value(args), env, args.size()-needKeyParams > params.size()?
                             Error.TOO_MANY_ARGS : Error.TOO_FEW_ARGS
                     );
 
@@ -752,11 +764,16 @@ public class Value {
 
                 // Iterate through the list of parameters and
                 // insert the arguments into the scope.
-                for (int i=0; i<params.size(); i++) {
+
+                for (int i = 0; i<keyParamOnPosition; i++) {
                     if (params.get(i).type != Type.ATOM)
                         throw new Error(this, env, Error.INVALID_LAMBDA);
                     // Set the parameter name into the scope.
                     e.set(params.get(i).str, args.get(i));
+                }
+                for (int i = keyParamOnPosition; i<params.size(); i++) {
+                    String paramName = params.get(i).str;
+                    e.set(paramName, argForKeyParam(args,keyParamOnPosition,paramName,env));
                 }
 
                 // Evaluate the function body with the function scope
@@ -774,14 +791,8 @@ public class Value {
         }
     }
 
-    Value eval(Environment env) {
-        Value evaluated = eval(env, false);
-        return evaluated;
-    }
-
-
     // Evaluate this value as lisp code.
-    Value eval(Environment env, boolean isArgument) {
+    Value eval(Environment env) {
         List<Value> args;
         Value function;
         Environment e;
@@ -789,14 +800,7 @@ public class Value {
             case QUOTE:
                 return list.get(0);
             case ATOM:
-                //if (isArgument)
-                Value retval = env.get(str);
-                    //todo here
-//                if (isArgument) {
-//                    this.isKeyArgument = true;
-//                    return this;
-//                } else
-                    return retval;
+                return env.get(str);
             case LIST:
                 if (list.size() < 1)
                     throw new Error(this, env, Error.EVAL_EMPTY_LIST);
@@ -810,7 +814,7 @@ public class Value {
 
                 if (!function.is_builtin())
                     for (int i=0; i<args.size(); i++)
-                        args.set(i, args.get(i).eval(env, true));
+                        args.set(i, args.get(i).eval(env));
 
                 Value ret = function.apply(
                         args,

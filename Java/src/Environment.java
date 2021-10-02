@@ -1,4 +1,3 @@
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
@@ -171,12 +170,12 @@ public class Environment {
 
     void set(String name, Value value) {
         defs.put(name, value.clone());
-        if (value.keyArgOnPosition>=0) {
+        if (value.keyParamOnPosition >=0) {
             Value params = value.car();
             List<Value> clonedList = params.as_list();
             for (Value v: clonedList) {
                 if (v.isKeyParam)
-                    defs.put(v.display(), null); //todo here will default values!
+                    defs.put(":"+v.display(), v); //todo here will default values!
             }
             System.out.println();
         }
