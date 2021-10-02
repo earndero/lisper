@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class Runner {
@@ -37,5 +38,15 @@ public class Runner {
             print_eval(parsed.get(i), env);
         // Return the result of the last expression.
         return print_eval(parsed.get(parsed.size()-1), env);
+    }
+
+    static void run_start(String[] argv, String code) {
+        List<Value> args = new ArrayList<>();
+        for (int i=0; i<argv.length; i++)
+            args.add(Value.string(argv[i]));
+        int argc = argv.length;
+        Environment env = new Environment();
+        env.set("cmd-args", new Value(args));
+        run(code, env);
     }
 }

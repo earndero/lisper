@@ -48,12 +48,6 @@ public class Main {
 
     // Execute code in an environment
     public static void main(String[] argv) {
-        Environment env = new Environment();
-        List<Value> args = new ArrayList<>();
-        for (int i=0; i<argv.length; i++)
-            args.add(Value.string(argv[i]));
-        env.set("cmd-args", new Value(args));
-        int argc = argv.length;
         File f = new File("examples/v");
         FilenameFilter filter = new FilenameFilter() {
             @Override
@@ -68,7 +62,7 @@ public class Main {
 //            Runner.run(builtin.read_file_contents("examples/v/"+pathname), env);
 //        }
 
-        Runner.run(builtin.read_file_contents("examples/v/lambda_key.lisp"), env);
+        Runner.run_start(argv, builtin.read_file_contents("examples/v/lambda_key.lisp"));
         //#ifdef USE_STD
 /*
         if (argc == 0 || (argc == 1 && argv[0].equals("-i")))
