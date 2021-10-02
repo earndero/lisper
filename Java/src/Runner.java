@@ -25,12 +25,22 @@ public class Runner {
         for (int i=0; i<parsed.size()-1; i++) {
             StartValue arg = parsed.get(i);
             Value value = arg.eval(env);
-            System.out.println(value.display());
+            if (arg.testResult==null)
+                System.out.println(value.display());
+            else if (value.display().equals((arg.testResult)))
+                System.out.println("OK");
+            else
+                System.out.println("diff: "+value.display()+" <-> "+arg.testResult);
         }
         // Return the result of the last expression.
-        StartValue arg = parsed.get(parsed.size()-1);
+        StartValue arg = parsed.get(parsed.size()-1); //todo redyntant
         Value value = arg.eval(env);
-        System.out.println(value.display());
+        if (arg.testResult==null)
+            System.out.println(value.display());
+        else if (value.display().equals((arg.testResult)))
+            System.out.println("OK");
+        else
+            System.out.println("diff: "+value.display()+" <-> "+arg.testResult);
         return value;
     }
 }

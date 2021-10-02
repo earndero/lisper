@@ -108,6 +108,7 @@ public class Lexer {
 
     Token readString() {
         Token tok;
+        scanner.skip_whitespace();//for start_value
         scanner.nextChar();
         scanner.setAnchor();
         while ((scanner.peek()!='"'))

@@ -33,7 +33,8 @@ public class Parser {
         tok = lexer.la();
         if (tok!=null)
         if (tok.value.equals("=>") || tok.value.equals("=e>")) {
-            lexer.readToEol();
+            Token testTok = lexer.readString();
+            sv.testResult = testTok.value;
             lexer.getNext();
         }
         return sv;
