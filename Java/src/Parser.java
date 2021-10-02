@@ -1,3 +1,4 @@
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +53,7 @@ public class Parser {
                 case Symbol:
                     switch(tok.subtype){
                         case Ident:  return Value.atom(tok.value);
-                        case Int: return new Value(Integer.parseInt(tok.value));
+                        case Int: return new Value(new BigInteger(tok.value));
                         case Float: return new Value(Double.parseDouble(tok.value));
                     }
                 case Quote: return Value.quote(value());

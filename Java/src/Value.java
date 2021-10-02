@@ -317,7 +317,7 @@ public class Value {
             case FLOAT:
                 return (double)stack_data == (double)other.stack_data;
             case INT:
-                return (BigInteger)stack_data == (BigInteger)other.stack_data;
+                return ((BigInteger)stack_data).equals((BigInteger)other.stack_data);
             case BUILTIN:
                 return stack_data == other.stack_data;
             case STRING:

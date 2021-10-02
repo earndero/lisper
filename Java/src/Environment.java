@@ -134,7 +134,6 @@ public class Environment {
             if (value!=null) return value;
             else return parent_scope.get(name);
         }
-
         throw new Error(Value.atom(name), this, Error.ATOM_NOT_DEFINED);
     }
 
