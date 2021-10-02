@@ -44,6 +44,7 @@ public class Value {
     private Environment lambda_scope = new Environment();
 
     private boolean isKeyArgument = false;
+    private int keyArgOnPosition = -1;
     private Type type;
     private String str;
     private Object stack_data; //union int i; double f; Builtin b;
@@ -127,8 +128,23 @@ public class Value {
         type = Type.LAMBDA;
         // We store the params and the result in the list member
         // instead of having dedicated members. This is to save memory.
+
+        //new params search &Key parameter and set
+        List<Value> new_params = new ArrayList<>();
+        for (int i=0; i<params.size(); i++) {
+            Value value = params.get(i);
+            if (value.display().equals("&KEY"))
+            {
+              if (keyArgOnPosition<0)
+                  keyArgOnPosition = i;
+            } else {
+                if (keyArgOnPosition>=0)
+                    value.isKeyArgument = true;
+                new_params.add(value);
+            }
+        }
         list = new ArrayList<>();
-        list.add(new Value(params));
+        list.add(new Value(new_params));
         list.add(ret);
 
         // Lambdas capture only variables that they know they will use.
@@ -770,7 +786,11 @@ public class Value {
             case QUOTE:
                 return list.get(0);
             case ATOM:
-                return env.get(str);
+                if (isArgument) {
+                    this.isKeyArgument = true;
+                    return this;
+                } else
+                    return env.get(str);
             case LIST:
                 if (list.size() < 1)
                     throw new Error(this, env, Error.EVAL_EMPTY_LIST);
