@@ -31,6 +31,7 @@ public class Parser {
         } else
             throw new Error(null, new Environment(), Error.EXPRESSION_NO_LIST);
         tok = lexer.la();
+        if (tok!=null)
         if (tok.value.equals("=>") || tok.value.equals("=e>")) {
             lexer.readToEol();
             lexer.getNext();

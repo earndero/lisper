@@ -52,7 +52,8 @@ public class Main {
             args.add(Value.string(argv[i]));
         env.set("cmd-args", new Value(args));
         int argc = argv.length;
-        Runner.run(builtin.read_file_contents("examples/inc_dec.lisp"), env);
+        Runner.run(builtin.read_file_contents("examples/factorial0.lisp"), env);
+        //Runner.run(builtin.read_file_contents("examples/inc_dec.lisp"), env);
 //        Value.run(builtin.read_file_contents("examples/v/cond.lisp"), env);
 //        Value.run(builtin.read_file_contents("examples/hello_world.lisp"), env);
 //        Value.run(builtin.read_file_contents("examples/odd_even.lisp"), env);
