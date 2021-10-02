@@ -175,7 +175,11 @@ public class Environment {
             List<Value> clonedList = params.as_list();
             for (Value v: clonedList) {
                 if (v.isKeyParam)
-                    defs.put(":"+v.display(), v); //todo here will default values!
+                if (v.type==Value.Type.LIST) { //default value
+                    defs.put(":"+v.car().display(), v);
+                } else {
+                    defs.put(":"+v.display(), v);
+                }
             }
         }
     }
