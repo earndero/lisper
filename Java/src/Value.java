@@ -69,9 +69,14 @@ public class Value {
     }
 
     // Constructs an integer
-    Value(BigInteger i) {
+    Value(BigRational i) {
         type = Type.INT;
         stack_data = i;
+    }
+
+    Value(BigInteger i) {
+        type = Type.INT;
+        stack_data = new BigRational(i,BigInteger.ONE);
     }
     // Constructs a floating point value
     Value(double f) {
@@ -194,7 +199,7 @@ public class Value {
             case FLOAT:
                 return (double)stack_data != 0.0;
             case INT:
-                return !((BigInteger)stack_data).equals(BigInteger.ZERO);
+                return !((BigRational)stack_data).equals(BigRational.ZERO);
             case BUILTIN:
                 return stack_data != null;
             case STRING:
@@ -218,7 +223,7 @@ public class Value {
 
     // Get this item's integer value
     int as_int() {
-        return ((BigInteger)cast_to_int().stack_data).intValue();
+        return ((BigRational)cast_to_int().stack_data).toBigInt().intValue();
     }
 
     // Get this item's floating point value
@@ -282,8 +287,8 @@ public class Value {
     // Cast this to an integer value
     Value cast_to_int() {
         switch (type) {
-            case INT: return new Value((BigInteger)stack_data);
-            case FLOAT: return new Value(((BigInteger)stack_data).doubleValue());
+            case INT: return new Value((BigRational)stack_data);
+            case FLOAT: return new Value(((BigRational)stack_data).doubleValue());
             // Only ints and floats can be cast to an int
             default:
                 throw new Error(this, new Environment(), Error.BAD_CAST);
@@ -294,7 +299,7 @@ public class Value {
     Value cast_to_float() {
         switch (type) {
             case FLOAT: return new Value((double)stack_data);
-            case INT: return new Value(BigInteger.valueOf((long)((double)stack_data)));
+            case INT: return new Value(new BigRational((long)((double)stack_data)));
             // Only ints and floats can be cast to a float
             default:
                 throw new Error(this, new Environment(), Error.BAD_CAST);
@@ -317,7 +322,7 @@ public class Value {
             case FLOAT:
                 return (double)stack_data == (double)other.stack_data;
             case INT:
-                return ((BigInteger)stack_data).equals((BigInteger)other.stack_data);
+                return ((BigRational)stack_data).equals((BigRational)other.stack_data);
             case BUILTIN:
                 return stack_data == other.stack_data;
             case STRING:
@@ -389,7 +394,7 @@ public class Value {
                 if (other.type == Type.FLOAT)
                     return (float)cast_to_float().stack_data < (float)other.stack_data;
                     // Otherwise compare the integer values
-                else return ((BigInteger)stack_data).compareTo((BigInteger)other.stack_data)<0;
+                else return ((BigRational)stack_data).compareTo((BigRational)other.stack_data)<0;
             default:
                 // Only allow comparisons between integers and floats
                 throw new Error(this, new Environment(), Error.INVALID_ORDER);
@@ -399,13 +404,13 @@ public class Value {
     public boolean even() {
         if (type != Type.INT)
             throw new Error(this, new Environment(), Error.INVALID_UNARY_OP);
-        return ((BigInteger)(stack_data)).getLowestSetBit() != 0;
+        return ((BigRational)(stack_data)).toBigInt().getLowestSetBit() != 0;
     }
 
     public boolean odd() {
         if (type != Type.INT)
             throw new Error(this, new Environment(), Error.INVALID_UNARY_OP);
-        return ((BigInteger)(stack_data)).getLowestSetBit() == 0;
+        return ((BigRational)(stack_data)).toBigInt().getLowestSetBit() == 0;
     }
 
 
@@ -436,7 +441,7 @@ public class Value {
                 if (other.type == Type.FLOAT)
                     return new Value((double)cast_to_float().stack_data + (double)other.stack_data);
                     // Otherwise, do integer addition.
-                else return new  Value(((BigInteger)stack_data).add((BigInteger)other.stack_data));
+                else return new  Value(((BigRational)stack_data).plus((BigRational)other.stack_data));
             case STRING:
                 // If the other value is also a string, do the concat
                 if (other.type == Type.STRING)
@@ -483,7 +488,7 @@ public class Value {
                 if (other.type == Type.FLOAT)
                     return new Value((double)cast_to_float().stack_data - (double)other.stack_data);
                     // Otherwise, do integer subtraction.
-                else return new Value(((BigInteger)stack_data).subtract((BigInteger)other.stack_data));
+                else return new Value(((BigRational)stack_data).minus((BigRational)other.stack_data));
             case UNIT:
                 // Unit types consume all arithmetic operations.
                 return clone();
@@ -513,7 +518,7 @@ public class Value {
                 if (other.type == Type.FLOAT)
                     return new Value((double)cast_to_float().stack_data * (double)other.stack_data);
                     // Otherwise, do integer multiplication.
-                else return new Value(((BigInteger)stack_data).multiply((BigInteger)other.stack_data));
+                else return new Value(((BigRational)stack_data).times((BigRational)other.stack_data));
             case UNIT:
                 // Unit types consume all arithmetic operations.
                 return clone();
@@ -543,7 +548,7 @@ public class Value {
                 if (other.type == Type.FLOAT)
                     return new Value((double)cast_to_float().stack_data / (double)other.stack_data);
                     // Otherwise, do integer multiplication.
-                else return new Value(((BigInteger)stack_data).divide((BigInteger)other.stack_data));
+                else return new Value(((BigRational)stack_data).divides((BigRational)other.stack_data));
             case UNIT:
                 // Unit types consume all arithmetic operations.
                 return clone();
@@ -579,7 +584,7 @@ public class Value {
                 // If we do not support libm, we have to throw new Errors for floating point values.
                 if (other.type != Type.INT)
                     throw new Error(other, new Environment(), Error.NO_LIBM_SUPPORT);
-                return new Value(((BigInteger)stack_data).mod((BigInteger)other.stack_data));
+                return new Value(((BigRational)stack_data).toBigInt().mod(((BigRational)(other.stack_data)).toBigInt()));
 //        #endif
 
             case UNIT:
@@ -624,7 +629,7 @@ public class Value {
             case ATOM:
                 return str;
             case INT:
-                return String.valueOf((BigInteger)stack_data);
+                return String.valueOf((BigRational)stack_data);
             case FLOAT:
                 return String.valueOf((double)stack_data);
             case STRING:
@@ -661,7 +666,7 @@ public class Value {
             case ATOM:
                 return str;
             case INT:
-                return String.valueOf((BigInteger)stack_data);
+                return String.valueOf((BigRational)stack_data);
             case FLOAT:
                 return String.valueOf((double)stack_data);
             case STRING:

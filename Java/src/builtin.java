@@ -2,7 +2,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -442,7 +441,7 @@ public class builtin {
             if (p.args.size() != 2)
                 throw new Error(new Value("=", eq), p.env, p.args.size() > 2 ? Error.TOO_MANY_ARGS : Error.TOO_FEW_ARGS);
             int n = p.args.get(0).eq(p.args.get(1))?1:0;//todo boolean
-            return new Value(new BigInteger(String.valueOf(n)));
+            return new Value(new BigRational(String.valueOf(n)));
         }
     };
 
