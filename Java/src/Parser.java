@@ -65,6 +65,15 @@ public class Parser {
     List<Value> values() {
         List<Value> result = new ArrayList<>();
         while (!lexer.eof()) {
+            Value v = value();
+            result.add(v);
+        }
+        return result;
+    }
+
+    List<StartValue> start_values() {
+        List<StartValue> result = new ArrayList<>();
+        while (!lexer.eof()) {
             StartValue v = start_value();
             result.add(v);
         }
