@@ -77,16 +77,18 @@ public class builtin {
             if (p.args.size() == 0)
                 throw new Error(new Value("cond", cond), p.env, Error.TOO_FEW_ARGS);
             for (Value arg:p.args)
-                if (arg.car()!=null)
-                if (arg.car().eval(p.env).as_bool()) {
+                if (arg.car()!=null) {
                     List<Value> cdr = arg.cdr();
                     if (cdr!=null && cdr.size()>0) {
-                        for (int i=0; i<cdr.size()-1; i++)
-                            cdr.get(i).eval(p.env);
-                        return cdr.get(cdr.size()-1).eval(p.env);
+                        if (arg.car().eval(p.env).as_bool()) {
+                            for (int i=0; i<cdr.size()-1; i++)
+                                cdr.get(i).eval(p.env);
+                            return cdr.get(cdr.size()-1).eval(p.env);
+                        }
                     }
-                    else
-                        return new Value();
+                    else {
+                        return arg.car().eval(p.env);
+                    }
                 }
             return new Value();
 //
