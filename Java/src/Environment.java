@@ -9,6 +9,18 @@ public class Environment {
     private Map<String, Value> defs = new HashMap<>();;
     private Environment parent_scope;
 
+    public Environment clone() {
+        Environment cloned = new Environment();
+        cloned.parent_scope = parent_scope;
+        for (Map.Entry<String, Value> entry : defs.entrySet()) {
+            String key = entry.getKey();
+            Value value = entry.getValue();
+            cloned.defs.put(key, value.clone());
+        }
+        return cloned;
+    }
+
+
     public Environment() {
         parent_scope = null;
     }
@@ -157,7 +169,7 @@ public class Environment {
     }
 
     void set(String name, Value value) {
-        defs.put(name, value);
+        defs.put(name, value.clone());
     }
 
     void set_parent_scope(Environment parent) {

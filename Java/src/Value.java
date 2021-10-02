@@ -45,28 +45,22 @@ public class Value {
     private String str;
     private Object stack_data; //union int i; double f; Builtin b;
 
+    private List<Value> clone_list(List<Value> list) {
+        if (list==null) return null;
+        List<Value> cloned_list = new ArrayList<>();
+        for (Value v: list)
+            cloned_list.add(v.clone());
+        return cloned_list;
+    }
+
     protected Value clone() {
-        switch (type) {
-            case INT:
-                return new Value((BigInteger) stack_data);
-            case FLOAT:
-                return new Value((double)stack_data);
-            case STRING:
-                return string(str);
-            case LIST:
-                new Value(list); //todo need clone
-            case BUILTIN:
-                return new Value(str, (Builtin)stack_data);
-            case UNIT:
-                return new Value();
-            case QUOTE:
-                return quote(list.get(0));
-            case ATOM:
-                return atom(str);
-            case LAMBDA:
-                return new Value(list.get(0).as_list(), list.get(1), null);//todo env==null?
-            default:return new Value();
-        }
+        Value cloned = new Value();
+        cloned.stack_data = stack_data;
+        cloned.lambda_scope = lambda_scope.clone();
+        cloned.list = clone_list(list);
+        cloned.str = str;
+        cloned.type = type;
+        return cloned;
     }
 
     // Constructs a unit value
@@ -87,7 +81,7 @@ public class Value {
     // Constructs a list
     Value(List<Value> list) {
         type = Type.LIST;
-        this.list = list;
+        this.list = clone_list(list);
     }
     // Construct a quoted value
     static Value quote(Value quoted) {
@@ -253,7 +247,7 @@ public class Value {
         // If this item is not a list, throw a cast error.
         if (type != Type.LIST)
             throw new Error(this, new Environment(), Error.BAD_CAST);
-        return list;
+        return clone_list(list);
     }
 
     // Push an item to the end of this list
@@ -722,7 +716,7 @@ public class Value {
                     );
 
                 // Get the captured scope from the lambda
-                e = lambda_scope;
+                e = lambda_scope.clone();
                 // And make this scope the parent scope
                 e.set_parent_scope(env);
 
