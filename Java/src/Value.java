@@ -16,7 +16,7 @@ public class Value {
     public String defun_name = null;
 
     public Value car() {
-        if (type!=Type.LIST)
+        if (type!=Type.LIST && type!=Type.LAMBDA)
             return null;
         else if (list.size()==0)
             return null;
@@ -43,8 +43,8 @@ public class Value {
     private List<Value> list = new ArrayList<>();
     private Environment lambda_scope = new Environment();
 
-    private boolean isKeyArgument = false;
-    private int keyArgOnPosition = -1;
+    boolean isKeyParam = false;
+    int keyArgOnPosition = -1;
     private Type type;
     private String str;
     private Object stack_data; //union int i; double f; Builtin b;
@@ -59,6 +59,8 @@ public class Value {
 
     protected Value clone() {
         Value cloned = new Value();
+        cloned.isKeyParam = isKeyParam;
+        cloned.keyArgOnPosition = keyArgOnPosition;
         cloned.stack_data = stack_data;
         cloned.lambda_scope = lambda_scope.clone();
         cloned.list = clone_list(list);
@@ -139,7 +141,7 @@ public class Value {
                   keyArgOnPosition = i;
             } else {
                 if (keyArgOnPosition>=0)
-                    value.isKeyArgument = true;
+                    value.isKeyParam = true;
                 new_params.add(value);
             }
         }
@@ -271,7 +273,7 @@ public class Value {
         // If this item is not a list, throw a cast error.
         if (type != Type.LIST)
             throw new Error(this, new Environment(), Error.BAD_CAST);
-        return clone_list(list);
+        return clone_list(list); //todo must be clone?
     }
 
     // Push an item to the end of this list
@@ -773,7 +775,8 @@ public class Value {
     }
 
     Value eval(Environment env) {
-        return eval(env, false);
+        Value evaluated = eval(env, false);
+        return evaluated;
     }
 
 
@@ -786,11 +789,14 @@ public class Value {
             case QUOTE:
                 return list.get(0);
             case ATOM:
-                if (isArgument) {
-                    this.isKeyArgument = true;
-                    return this;
-                } else
-                    return env.get(str);
+                //if (isArgument)
+                Value retval = env.get(str);
+                    //todo here
+//                if (isArgument) {
+//                    this.isKeyArgument = true;
+//                    return this;
+//                } else
+                    return retval;
             case LIST:
                 if (list.size() < 1)
                     throw new Error(this, env, Error.EVAL_EMPTY_LIST);

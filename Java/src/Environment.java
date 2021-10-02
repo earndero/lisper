@@ -1,6 +1,7 @@
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -128,7 +129,7 @@ public class Environment {
         // Constants
         if (name.equals("endl")) return Value.string("\n");
 
-        Value value = defs.get(name.toUpperCase(Locale.ROOT));
+        Value value = defs.get(name.toUpperCase(Locale.ROOT)); //todo while insetad of call get
         if (value!=null) return value;
         else if (parent_scope != null) {
             value = parent_scope.defs.get(name.toUpperCase(Locale.ROOT));
@@ -170,6 +171,15 @@ public class Environment {
 
     void set(String name, Value value) {
         defs.put(name, value.clone());
+        if (value.keyArgOnPosition>=0) {
+            Value params = value.car();
+            List<Value> clonedList = params.as_list();
+            for (Value v: clonedList) {
+                if (v.isKeyParam)
+                    defs.put(v.display(), null); //todo here will default values!
+            }
+            System.out.println();
+        }
     }
 
     void set_parent_scope(Environment parent) {
