@@ -734,10 +734,14 @@ public class Value {
     }
 
     Value argForKeyParam(List<Value> args, int start, String paramName, Environment env) {//todo Error not must have Envirponment?
-        for (int i=start; i<args.size()-1; i+=2)
-            if (args.get(i).str.equals(paramName))
-                return args.get(i+1);
-        throw new Error(this, env, Error.NOT_FOUND_KEY_ARG);
+        for (int i=start; i<args.size()-1; i+=2) {
+            Value arg = args.get(i);
+            if (arg.type==Type.LIST)
+                arg = arg.car();
+            if (arg.str.equals(paramName))
+                return args.get(i + 1);
+        }
+        return null;
     }
 
     // Apply this as a function to a list of arguments in a given environment.
@@ -752,12 +756,18 @@ public class Value {
                 for (Value arg: args)
                     if (arg.isKeyParam)
                         keyArgsCount++;
-                int needKeyParams = params.size() - keyParamOnPosition;
-                if (params.size() != args.size()-needKeyParams)
-                    throw new Error(new Value(args), env, args.size()-needKeyParams > params.size()?
-                            Error.TOO_MANY_ARGS : Error.TOO_FEW_ARGS
-                    );
-
+                int defParamCount = 0;
+                for (int i=keyParamOnPosition; i<params.size(); i++ ) {
+                    Value param = params.get(i);
+                    if (param.type==Type.LIST && param.list.size()>1)
+                        defParamCount++;
+                }
+                int needMaxKeyParams = params.size() - keyParamOnPosition;
+                int needMinKeyParams = needMaxKeyParams-defParamCount;
+                if (args.size()-keyArgsCount<keyParamOnPosition+needMinKeyParams)
+                    throw new Error(new Value(args), env, Error.TOO_FEW_ARGS);
+                else if (args.size()-keyArgsCount>keyParamOnPosition+needMaxKeyParams)
+                    throw new Error(new Value(args), env, Error.TOO_MANY_ARGS);
                 // Get the captured scope from the lambda
                 e = lambda_scope.clone();
                 // And make this scope the parent scope
@@ -773,8 +783,21 @@ public class Value {
                     e.set(params.get(i).str, args.get(i));
                 }
                 for (int i = keyParamOnPosition; i<params.size(); i++) {
-                    String paramName = params.get(i).str;
-                    e.set(paramName, argForKeyParam(args,keyParamOnPosition,paramName,env));
+                    Value param = params.get(i);
+                    Value argument;
+                    String paramName;
+                    if (param.type==Type.LIST) {
+                        paramName = param.car().str;
+                        argument = argForKeyParam(args, keyParamOnPosition, paramName, env);
+                        if (argument==null)
+                            argument = param.list.get(1);
+                    } else {
+                        paramName = param.str;
+                        argument = argForKeyParam(args, keyParamOnPosition, paramName, env);
+                        if (argument==null)
+                            throw new Error(this, env, Error.NOT_FOUND_KEY_ARG);
+                    }
+                    e.set(paramName, argument);
                 }
 
                 // Evaluate the function body with the function scope
@@ -814,8 +837,10 @@ public class Value {
                 function = list.get(0).eval(env);
 
                 if (!function.is_builtin())
-                    for (int i=0; i<args.size(); i++)
-                        args.set(i, args.get(i).eval(env));
+                    for (int i=0; i<args.size(); i++) {
+                        Value arg = args.get(i);
+                        args.set(i, arg.eval(env));
+                    }
 
                 Value ret = function.apply(
                         args,
