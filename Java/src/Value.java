@@ -780,15 +780,14 @@ public class Value {
                 params = list.get(0).list;
 
                 int minimal,maximal;
-                if (par.keyedReqCount+par.keyedDefCount>0) {
+                if (par.keyedReqCount>0) {
                     minimal = par.simpleCount+par.optionalReqCount+par.optionalDefCount
                               + 2*par.keyedReqCount;//if keyed, optional must be all
                     maximal = minimal + 2*par.keyedDefCount;
                 } else {
                     minimal = par.simpleCount+par.optionalReqCount;
-                    maximal = minimal + par.optionalDefCount;
+                    maximal = minimal + par.optionalDefCount + 2*par.keyedDefCount;
                 }
-
                 if (args.size()  < minimal)
                     throw new Error(new Value(args), env, Error.TOO_FEW_ARGS);
                 else if (args.size() > maximal)

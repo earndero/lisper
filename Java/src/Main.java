@@ -59,8 +59,8 @@ public class Main {
         Arrays.sort(pathnames);
         String[] names = {"optional_alone.lisp", "simple_params.lisp",
                 "opt_params.lisp", "key_params.lisp", "optional.lisp",
-                "parameters.lisp", "def_values.lisp", "lambda_key.lisp" };
-        Runner.run_start(argv, builtin.read_file_contents("examples/v/key_params.lisp"));
+                "def_values.lisp", "lambda_key.lisp" };
+        //Runner.run_start(argv, builtin.read_file_contents("examples/v/optional.lisp"));
         for (String name : names) {
             System.out.println(name);
             Runner.run_start(argv, builtin.read_file_contents("examples/v/"+name));
