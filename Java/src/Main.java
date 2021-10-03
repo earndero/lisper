@@ -62,7 +62,7 @@ public class Main {
 //            Runner.run(builtin.read_file_contents("examples/v/"+pathname), env);
 //        }
 
-        Runner.run_start(argv, builtin.read_file_contents("examples/v/def_values.lisp"));
+        Runner.run_start(argv, builtin.read_file_contents("examples/v/key_params.lisp"));
         //#ifdef USE_STD
 /*
         if (argc == 0 || (argc == 1 && argv[0].equals("-i")))

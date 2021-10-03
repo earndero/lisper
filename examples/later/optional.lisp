@@ -1,5 +1,5 @@
 ;&optional must be before &key
-;musdt be all &optional before any &key arguments
+;must be all &optional before any &key arguments
 (defun fun1 (a b &optional (c 1)) (+ a b c))
 (fun1 10 100) => "111"
 
