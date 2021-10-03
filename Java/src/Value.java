@@ -43,8 +43,12 @@ public class Value {
     private List<Value> list = new ArrayList<>();
     private Environment lambda_scope = new Environment();
 
-    boolean isKeyParam = false;
+    /*boolean isKeyParam = false;
     int keyOnPosition =0;
+    boolean isOptParam = false;
+    int optOnPosition =0;*/
+    ParamType paramType = ParamType.NoParam;
+    Parameters par = null;
     Type type;
     private String str;
     private Object stack_data; //union int i; double f; Builtin b;
@@ -59,8 +63,8 @@ public class Value {
 
     protected Value clone() {
         Value cloned = new Value();
-        cloned.isKeyParam = isKeyParam;
-        cloned.keyOnPosition = keyOnPosition;
+        cloned.paramType = paramType;
+        cloned.par = par==null?null:par.clone();
         cloned.stack_data = stack_data;
         cloned.lambda_scope = lambda_scope.clone();
         cloned.list = clone_list(list);
@@ -131,21 +135,41 @@ public class Value {
         // We store the params and the result in the list member
         // instead of having dedicated members. This is to save memory.
 
-        //new params search &Key parameter and set
         List<Value> new_params = new ArrayList<>();
-        keyOnPosition = params.size(); //if not found &Key, all will be not keyed
-        for (int i=0; i<params.size(); i++) {
-            Value value = params.get(i);
-            if (value.type==Type.ATOM && value.str.equals("&KEY"))
-            {
-                if (i< keyOnPosition)
-                    keyOnPosition = i;
-            } else {
-                if (keyOnPosition < params.size())
-                    value.isKeyParam = true;
+        par = new Parameters();
+        //optOnPosition = keyOnPosition = params.size(); //if not found &Key, all will be not keyed
+        boolean meetOptional = false;
+        boolean meetKey = false;
+        for (Value value : params) {
+            if (value.type==Type.ATOM) {
+                if (value.str.equals("&OPTIONAL")) {
+                    if (meetOptional || meetKey)
+                        throw new Error(this, new Environment(), Error.FOUND_OPT);
+                    meetOptional = true;
+                } else if (value.str.equals("&KEY")) {
+                    if (meetKey)
+                        throw new Error(this, new Environment(), Error.FOUND_KEY);
+                    meetKey = true;
+                } else {
+                    if (meetKey)
+                        par.keyedReqCount++;
+                    else if (meetOptional)
+                        par.optionalReqCount++;
+                    else
+                        par.simpleCount++;
+                    new_params.add(value);
+                }
+            } else if (value.type==Type.LIST) {
+                if (meetKey)
+                    par.keyedDefCount++;
+                else if (meetOptional)
+                    par.optionalDefCount++;
+                else
+                    throw new Error(this, new Environment(), Error.SIMPLE_PARAM_LIST);
                 new_params.add(value);
-            }
+            } else throw new Error(this, new Environment(), Error.BAD_PARAM_TYPE);
         }
+
         list = new ArrayList<>();
         list.add(new Value(new_params));
         list.add(ret);
@@ -752,22 +776,22 @@ public class Value {
             case LAMBDA:
                 // Get the list of parameter atoms
                 params = list.get(0).list;
-                int keyArgsCount = 0;
-                for (Value arg: args)
-                    if (arg.isKeyParam)
-                        keyArgsCount++;
-                int defParamCount = 0;
-                for (int i = keyOnPosition; i<params.size(); i++ ) {
-                    Value param = params.get(i);
-                    if (param.type==Type.LIST && param.list.size()>1)
-                        defParamCount++;
+
+                int minimal,maximal;
+                if (par.keyedReqCount+par.keyedDefCount>0) {
+                    minimal = par.simpleCount+par.optionalReqCount+par.optionalDefCount
+                              +par.keyedReqCount;//if keyed, optional must be all
+                    maximal = minimal + par.keyedDefCount;
+                } else {
+                    minimal = par.simpleCount+par.optionalReqCount;
+                    maximal = minimal + par.optionalDefCount;
                 }
-                int needMaxKeyParams = params.size() - keyOnPosition;
-                int needMinKeyParams = needMaxKeyParams-defParamCount;
-                if (args.size()-keyArgsCount< keyOnPosition +needMinKeyParams)
+
+                if (args.size()  < minimal)
                     throw new Error(new Value(args), env, Error.TOO_FEW_ARGS);
-                else if (args.size()-keyArgsCount> keyOnPosition +needMaxKeyParams)
+                else if (args.size() > maximal)
                     throw new Error(new Value(args), env, Error.TOO_MANY_ARGS);
+
                 // Get the captured scope from the lambda
                 e = lambda_scope.clone();
                 // And make this scope the parent scope
@@ -775,31 +799,62 @@ public class Value {
 
                 // Iterate through the list of parameters and
                 // insert the arguments into the scope.
-
-                for (int i = 0; i< keyOnPosition; i++) {
+                int paramIdx=0, argIdx=0;
+                for (int i = 0; i<par.simpleCount; i++) {
                     if (params.get(i).type != Type.ATOM)
                         throw new Error(this, env, Error.INVALID_LAMBDA);
                     // Set the parameter name into the scope.
                     e.set(params.get(i).str, args.get(i));
+                    paramIdx++;
+                    argIdx++;
                 }
-                for (int i = keyOnPosition; i<params.size(); i++) {
+                for (int i = 0; i<par.optionalReqCount; i++) {
+                    Value argument;
+                    String paramName;
+                    Value param = params.get(paramIdx);
+                    paramName = param.str;
+                    argument = args.get(argIdx);
+                    e.set(paramName, argument);
+                    paramIdx++;
+                    argIdx++;
+                }
+                for (int i = 0; i<par.optionalDefCount; i++) {
+                    String paramName;
+                    Value param = params.get(paramIdx);
+                    paramName = param.car().str;
+                    Value argument;
+                    if (argIdx<args.size()) {
+                        argIdx++;
+                        argument = args.get(argIdx);
+                    }
+                    else
+                        argument = param.list.get(1);
+                    e.set(paramName, argument);
+                    paramIdx++;
+                }
+                int keyOnPosition = paramIdx;
+                for (int i = 0; i<par.keyedReqCount; i++) {
+                    String paramName;
+                    Value param = params.get(paramIdx);
+                    paramName = param.str;
+                    Value argument;
+                    argument = argForKeyParam(args, keyOnPosition, paramName, env);
+                    if (argument==null)
+                        throw new Error(this, env, Error.NOT_FOUND_KEY_ARG);
+                    e.set(paramName, argument);
+                    paramIdx++;
+                }
+                for (int i = 0; i<par.keyedDefCount; i++) {
                     Value param = params.get(i);
                     Value argument;
                     String paramName;
-                    if (param.type==Type.LIST) {
-                        paramName = param.car().str;
-                        argument = argForKeyParam(args, keyOnPosition, paramName, env);
-                        if (argument==null)
-                            argument = param.list.get(1);
-                    } else {
-                        paramName = param.str;
-                        argument = argForKeyParam(args, keyOnPosition, paramName, env);
-                        if (argument==null)
-                            throw new Error(this, env, Error.NOT_FOUND_KEY_ARG);
-                    }
+                    paramName = param.car().str;
+                    argument = argForKeyParam(args, keyOnPosition, paramName, env);
+                    if (argument==null)
+                        argument = param.list.get(1);
                     e.set(paramName, argument);
+                    paramIdx++;
                 }
-
                 // Evaluate the function body with the function scope
                 return list.get(1).eval(e);
             case BUILTIN:

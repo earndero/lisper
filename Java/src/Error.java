@@ -19,7 +19,11 @@ public class Error extends java.lang.Error {
     static final String NO_LIBM_SUPPORT = "no libm support";
     static final String EXPRESSION_NO_LIST = "expression no list";
     static final String NOT_FOUND_KEY_ARG = "not found key arg";
-
+    static final String NOT_FOUND_OPT_ARG = "not found optional arg";
+    static final String FOUND_OPT = "&optional marker not allowed here";
+    static final String FOUND_KEY = "&key marker not allowed here";
+    static final String BAD_PARAM_TYPE = "Parameters must be atoms or lists only";
+    static final String  SIMPLE_PARAM_LIST = "NOt optional param can't be default";
 
     Value cause;
     Environment env;

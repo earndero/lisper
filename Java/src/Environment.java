@@ -170,16 +170,14 @@ public class Environment {
 
     void set(String name, Value value) {
         defs.put(name, value.clone());
-        if (value.type==Value.Type.LAMBDA && value.keyOnPosition < value.as_list().size()) {
+        if (value.type==Value.Type.LAMBDA && value.par.keyedReqCount+value.par.keyedDefCount>0) {
             Value params = value.car();
             List<Value> clonedList = params.as_list();
             for (Value v: clonedList) {
-                if (v.isKeyParam)
-                if (v.type==Value.Type.LIST) { //default value
-                    defs.put(":"+v.car().display(), v);
-                } else {
+                if (v.paramType==ParamType.KeyedReq)
                     defs.put(":"+v.display(), v);
-                }
+                else if (v.paramType==ParamType.KeyedDef)
+                    defs.put(":"+v.car().display(), v);
             }
         }
     }
