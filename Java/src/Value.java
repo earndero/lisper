@@ -136,7 +136,7 @@ public class Value {
         keyParamOnPosition = params.size(); //if not found &Key, all will be not keyed
         for (int i=0; i<params.size(); i++) {
             Value value = params.get(i);
-            if (value.display().equals("&KEY"))
+            if (value.type==Type.ATOM && value.str.equals("&KEY"))
             {
                 if (i<keyParamOnPosition)
                     keyParamOnPosition = i;
