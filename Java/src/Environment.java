@@ -170,7 +170,7 @@ public class Environment {
 
     void set(String name, Value value) {
         defs.put(name, value.clone());
-        if (value.type==Value.Type.LAMBDA && value.keyParamOnPosition < value.as_list().size()) {
+        if (value.type==Value.Type.LAMBDA && value.keyOnPosition < value.as_list().size()) {
             Value params = value.car();
             List<Value> clonedList = params.as_list();
             for (Value v: clonedList) {

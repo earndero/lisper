@@ -44,7 +44,7 @@ public class Value {
     private Environment lambda_scope = new Environment();
 
     boolean isKeyParam = false;
-    int keyParamOnPosition=0;
+    int keyOnPosition =0;
     Type type;
     private String str;
     private Object stack_data; //union int i; double f; Builtin b;
@@ -60,7 +60,7 @@ public class Value {
     protected Value clone() {
         Value cloned = new Value();
         cloned.isKeyParam = isKeyParam;
-        cloned.keyParamOnPosition = keyParamOnPosition;
+        cloned.keyOnPosition = keyOnPosition;
         cloned.stack_data = stack_data;
         cloned.lambda_scope = lambda_scope.clone();
         cloned.list = clone_list(list);
@@ -133,15 +133,15 @@ public class Value {
 
         //new params search &Key parameter and set
         List<Value> new_params = new ArrayList<>();
-        keyParamOnPosition = params.size(); //if not found &Key, all will be not keyed
+        keyOnPosition = params.size(); //if not found &Key, all will be not keyed
         for (int i=0; i<params.size(); i++) {
             Value value = params.get(i);
             if (value.type==Type.ATOM && value.str.equals("&KEY"))
             {
-                if (i<keyParamOnPosition)
-                    keyParamOnPosition = i;
+                if (i< keyOnPosition)
+                    keyOnPosition = i;
             } else {
-                if (keyParamOnPosition < params.size())
+                if (keyOnPosition < params.size())
                     value.isKeyParam = true;
                 new_params.add(value);
             }
@@ -757,16 +757,16 @@ public class Value {
                     if (arg.isKeyParam)
                         keyArgsCount++;
                 int defParamCount = 0;
-                for (int i=keyParamOnPosition; i<params.size(); i++ ) {
+                for (int i = keyOnPosition; i<params.size(); i++ ) {
                     Value param = params.get(i);
                     if (param.type==Type.LIST && param.list.size()>1)
                         defParamCount++;
                 }
-                int needMaxKeyParams = params.size() - keyParamOnPosition;
+                int needMaxKeyParams = params.size() - keyOnPosition;
                 int needMinKeyParams = needMaxKeyParams-defParamCount;
-                if (args.size()-keyArgsCount<keyParamOnPosition+needMinKeyParams)
+                if (args.size()-keyArgsCount< keyOnPosition +needMinKeyParams)
                     throw new Error(new Value(args), env, Error.TOO_FEW_ARGS);
-                else if (args.size()-keyArgsCount>keyParamOnPosition+needMaxKeyParams)
+                else if (args.size()-keyArgsCount> keyOnPosition +needMaxKeyParams)
                     throw new Error(new Value(args), env, Error.TOO_MANY_ARGS);
                 // Get the captured scope from the lambda
                 e = lambda_scope.clone();
@@ -776,24 +776,24 @@ public class Value {
                 // Iterate through the list of parameters and
                 // insert the arguments into the scope.
 
-                for (int i = 0; i<keyParamOnPosition; i++) {
+                for (int i = 0; i< keyOnPosition; i++) {
                     if (params.get(i).type != Type.ATOM)
                         throw new Error(this, env, Error.INVALID_LAMBDA);
                     // Set the parameter name into the scope.
                     e.set(params.get(i).str, args.get(i));
                 }
-                for (int i = keyParamOnPosition; i<params.size(); i++) {
+                for (int i = keyOnPosition; i<params.size(); i++) {
                     Value param = params.get(i);
                     Value argument;
                     String paramName;
                     if (param.type==Type.LIST) {
                         paramName = param.car().str;
-                        argument = argForKeyParam(args, keyParamOnPosition, paramName, env);
+                        argument = argForKeyParam(args, keyOnPosition, paramName, env);
                         if (argument==null)
                             argument = param.list.get(1);
                     } else {
                         paramName = param.str;
-                        argument = argForKeyParam(args, keyParamOnPosition, paramName, env);
+                        argument = argForKeyParam(args, keyOnPosition, paramName, env);
                         if (argument==null)
                             throw new Error(this, env, Error.NOT_FOUND_KEY_ARG);
                     }
