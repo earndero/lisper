@@ -38,7 +38,7 @@ public class Value {
     }
 
     enum Type {QUOTE, ATOM, INT, FLOAT, LIST,STRING,
-        LAMBDA, BUILTIN, UNIT};
+        LAMBDA, BUILTIN, UNIT}
 
     private List<Value> list = new ArrayList<>();
     private Environment lambda_scope = new Environment();
@@ -247,7 +247,7 @@ public class Value {
             case FLOAT:
                 return (double)stack_data != 0.0;
             case INT:
-                return !((BigRational)stack_data).equals(BigRational.ZERO);
+                return !(stack_data).equals(BigRational.ZERO);
             case BUILTIN:
                 return stack_data != null;
             case STRING:
@@ -370,7 +370,7 @@ public class Value {
             case FLOAT:
                 return (double)stack_data == (double)other.stack_data;
             case INT:
-                return ((BigRational)stack_data).equals((BigRational)other.stack_data);
+                return (stack_data).equals(other.stack_data);
             case BUILTIN:
                 return stack_data == other.stack_data;
             case STRING:
@@ -677,7 +677,7 @@ public class Value {
             case ATOM:
                 return str;
             case INT:
-                return String.valueOf((BigRational)stack_data);
+                return String.valueOf(stack_data);
             case FLOAT:
                 return String.valueOf((double)stack_data);
             case STRING:
@@ -847,7 +847,7 @@ public class Value {
                     paramIdx++;
                 }
                 for (int i = 0; i<par.keyedDefCount; i++) {
-                    Value param = params.get(i);
+                    Value param = params.get(paramIdx);
                     Value argument;
                     String paramName;
                     paramName = param.car().str;
