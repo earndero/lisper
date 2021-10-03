@@ -57,12 +57,15 @@ public class Main {
         };
         String[] pathnames = f.list();
         Arrays.sort(pathnames);
-//        for (String pathname : pathnames) {
-//            System.out.println(pathname);
-//            Runner.run(builtin.read_file_contents("examples/v/"+pathname), env);
-//        }
+        String[] names = {"optional_alone.lisp", "simple_params.lisp",
+                "opt_params.lisp", "key_params.lisp", "optional.lisp",
+                "parameters.lisp", "def_values.lisp", "lambda_key.lisp" };
+        Runner.run_start(argv, builtin.read_file_contents("examples/v/key_params.lisp"));
+        for (String name : names) {
+            System.out.println(name);
+            Runner.run_start(argv, builtin.read_file_contents("examples/v/"+name));
+        }
 
-        Runner.run_start(argv, builtin.read_file_contents("examples/v/optional_alone.lisp"));
         //#ifdef USE_STD
 /*
         if (argc == 0 || (argc == 1 && argv[0].equals("-i")))

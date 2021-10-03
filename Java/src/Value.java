@@ -43,10 +43,6 @@ public class Value {
     private List<Value> list = new ArrayList<>();
     private Environment lambda_scope = new Environment();
 
-    /*boolean isKeyParam = false;
-    int keyOnPosition =0;
-    boolean isOptParam = false;
-    int optOnPosition =0;*/
     ParamType paramType = ParamType.NoParam;
     Parameters par = null;
     Type type;
@@ -151,20 +147,27 @@ public class Value {
                         throw new Error(this, new Environment(), Error.FOUND_KEY);
                     meetKey = true;
                 } else {
-                    if (meetKey)
+                    if (meetKey) {
                         par.keyedReqCount++;
-                    else if (meetOptional)
+                        value.paramType = ParamType.KeyedReq;
+                    } else if (meetOptional) {
                         par.optionalReqCount++;
-                    else
+                        value.paramType = ParamType.OptionalReq;
+                    } else {
                         par.simpleCount++;
+                        value.paramType = ParamType.Simple;
+                    }
                     new_params.add(value);
                 }
             } else if (value.type==Type.LIST) {
-                if (meetKey)
+                if (meetKey) {
                     par.keyedDefCount++;
-                else if (meetOptional)
+                    value.paramType = ParamType.KeyedDef;
+                }
+                else if (meetOptional) {
                     par.optionalDefCount++;
-                else
+                    value.paramType = ParamType.OptionalDef;
+                } else
                     throw new Error(this, new Environment(), Error.SIMPLE_PARAM_LIST);
                 new_params.add(value);
             } else throw new Error(this, new Environment(), Error.BAD_PARAM_TYPE);
@@ -200,7 +203,6 @@ public class Value {
     // Get all of the atoms used in a given Value
     List<String> get_used_atoms() {
         List<String> result = new ArrayList<>();
-        List<String> tmp = new ArrayList<>();
         switch (type) {
             case QUOTE:
                 // The data for a quote is stored in the
@@ -220,7 +222,7 @@ public class Value {
                 // of the elements in the list.
                 for (int i=0; i<list.size(); i++) {
                     // Get the atoms used in the element
-                    tmp = list.get(i).get_used_atoms();
+                    List<String> tmp = list.get(i).get_used_atoms();
                     // Add the used atoms to the current list of used atoms
                     result.addAll(tmp);
                 }
@@ -780,8 +782,8 @@ public class Value {
                 int minimal,maximal;
                 if (par.keyedReqCount+par.keyedDefCount>0) {
                     minimal = par.simpleCount+par.optionalReqCount+par.optionalDefCount
-                              +par.keyedReqCount;//if keyed, optional must be all
-                    maximal = minimal + par.keyedDefCount;
+                              + 2*par.keyedReqCount;//if keyed, optional must be all
+                    maximal = minimal + 2*par.keyedDefCount;
                 } else {
                     minimal = par.simpleCount+par.optionalReqCount;
                     maximal = minimal + par.optionalDefCount;
@@ -824,8 +826,8 @@ public class Value {
                     paramName = param.car().str;
                     Value argument;
                     if (argIdx<args.size()) {
-                        argIdx++;
                         argument = args.get(argIdx);
+                        argIdx++;
                     }
                     else
                         argument = param.list.get(1);
